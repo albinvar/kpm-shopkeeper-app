@@ -63,8 +63,8 @@ export default function LoginScreen() {
         end={{ x: 1, y: 1 }}
       >
         <KeyboardAvoidingView
-          className="flex-1"
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
         >
           <ScrollView 
@@ -72,16 +72,17 @@ export default function LoginScreen() {
             contentContainerStyle={{ flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            bounces={false}
           >
-            {/* Creative Top Section with Dynamic Background */}
-            <View 
-              className="items-center justify-center px-4 relative overflow-hidden"
-              style={{ 
-                paddingTop: insets.top + 10,
-                minHeight: Platform.OS === "ios" ? 280 : 260,
-                maxHeight: Platform.OS === "ios" ? 350 : 320
-              }}
-            >
+            <View className="flex-1 justify-between">
+              {/* Creative Top Section with Dynamic Background */}
+              <View 
+                className="items-center justify-center px-4 relative overflow-hidden"
+                style={{ 
+                  paddingTop: insets.top + 10,
+                  height: Platform.OS === "ios" ? 280 : 260
+                }}
+              >
             {/* Creative Background Elements */}
             {/* Large gradient circles */}
             <View className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-orange-400/20 to-amber-300/10 rounded-full" />
@@ -137,18 +138,19 @@ export default function LoginScreen() {
             </View>
             </View>
 
-            {/* Rising Bottom Section with Rounded Corners - Anchored to bottom */}
-            <Animated.View 
-              entering={FadeInUp.delay(300).springify()}
-              className="bg-white shadow-xl rounded-t-[48px] px-6 pt-8 pb-4"
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -8 },
-                shadowOpacity: 0.12,
-                shadowRadius: 20,
-                elevation: 25,
-              }}
-            >
+              {/* Rising Bottom Section with Rounded Corners - Anchored to bottom */}
+              <Animated.View 
+                entering={FadeInUp.delay(300).springify()}
+                className="bg-white shadow-xl rounded-t-[48px] px-6 pt-8 pb-6"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: -8 },
+                  shadowOpacity: 0.12,
+                  shadowRadius: 20,
+                  elevation: 25,
+                  marginTop: -20
+                }}
+              >
           {/* Handle bar */}
           <View className="w-12 h-1 bg-gray-300 rounded-full self-center mb-8" />
           
@@ -252,6 +254,7 @@ export default function LoginScreen() {
             </View>
             </View>
             </Animated.View>
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
