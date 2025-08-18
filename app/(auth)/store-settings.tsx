@@ -48,7 +48,7 @@ export default function StoreSettingsScreen() {
         <SettingCard
           icon={<EmployeesIcon width={28} height={28} />}
           title="Manage Employees"
-          subtitle="Assign/Manage Employees to handle the orders from KPM network"
+          subtitle="Assign/Manage Employees to handle the orders from KPM Partner network"
         />
 
         <SettingCard
@@ -86,7 +86,7 @@ export default function StoreSettingsScreen() {
         <View className="items-center my-6">
           <Icon width={100} height={100} />
           <Text className="mt-2 text-sm text-center text-gray-400">
-            By signing in with an account, you agree to KPM Terms of Service and Privacy Policy.
+            By signing in with an account, you agree to KPM Partner Terms of Service and Privacy Policy.
           </Text>
         </View>
 

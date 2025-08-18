@@ -4,22 +4,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-KPM is a React Native mobile application built with Expo for delivery/marketplace services. The app supports iOS, Android, and web platforms using a single codebase.
+**Shopkeeper Mobile App** - A React Native mobile application built with Expo specifically for shop owners and restaurant managers to manage their business operations. The app supports iOS, Android, and web platforms using a single codebase.
 
 When Coding, please always follow the instructions in this file.
 Double check every action you take.
 If you are not sure about something, please ask me.
 
+### Core Features
+
+📱 **SHOPKEEPER APP FUNCTIONALITY**
+- **Secure Authentication**: Login system for shop owners/managers
+- **Order Management**: View and manage incoming orders in real-time
+- **Financial Operations**: Handle refunds and generate invoices
+- **Availability Control**: Set shop/restaurant open/closed status and operating hours
+- **Customer Management**: Access and view customer details and order history
+- **Delivery Management**: Assign delivery partners to orders
+- **Future Integration**: Planned integration with Ecoyaan platform
+
 ### The Codebase
 
-1. When developing, please always make sure to keep the flow correct.
-2. There is a flow for shopowners and customers.
+1. When developing, please always make sure to keep the flow correct for shopkeeper operations.
+2. This is a shopkeeper-only application (no customer flow).
 3. The flow is defined in the `navigation/RootNavigator.tsx` file.
 4. All other navigators are defined in the `navigation/` directory.
 5. The `navigation/` directory is organized into the following subdirectories:
-   - `auth/` - Authentication screens
-   - `onboarding/` - Onboarding flow screens
-   - `tabs/` - Main app screens (index/home, explore, profile)
+   - `auth/` - Authentication screens for shopkeepers
+   - `onboarding/` - Onboarding flow for new shop registration
+   - `tabs/` - Main app screens (orders, shop management, profile)
    - `root/` - Root navigator
    - `stack/` - Stack navigator
 
@@ -55,15 +66,22 @@ npm run lint      # ESLint checking
 
 ### Navigation Flow
 
-1. **Splash** → **Onboarding** → **Authentication** → **Main App (Tabs)**
+1. **Splash** → **Shop Onboarding** (first time) → **Authentication** → **Main Dashboard (Tabs)**
 2. Entry point: `navigation/RootNavigator.tsx` manages the overall flow
 3. Authentication state currently hardcoded as `false` in RootNavigator
+4. Main tabs focus on business operations: Orders, Shop Management, Customers, Finance, Delivery, Profile
 
 ### File-Based Routing Structure
 
-- `app/(auth)/` - Authentication screens (login, otp, register, etc.)
-- `app/(onboarding)/` - Onboarding flow screens
-- `app/(tabs)/` - Main app screens (index/home, explore, profile)
+- `app/(auth)/` - Authentication screens (shopkeeper login, OTP verification, shop registration)
+- `app/(onboarding)/` - Shop onboarding flow (business details, documents, verification)
+- `app/(tabs)/` - Main app screens:
+  - `orders/` - Order management dashboard
+  - `shop/` - Shop settings and availability management
+  - `customers/` - Customer details and history
+  - `finance/` - Refunds, invoices, and financial reports
+  - `delivery/` - Delivery partner assignment
+  - `profile/` - Shopkeeper profile and settings
 - `app/_layout.tsx` - Root layout configuration
 
 ### Key Configuration Files
@@ -90,8 +108,10 @@ npm run lint      # ESLint checking
 
 ### Current State
 
-- App is in UI development phase without backend integration
+- Shopkeeper-focused app in UI development phase
+- Backend integration pending for order management and delivery systems
 - Mock data and timeouts used for simulated async operations
+- Future Ecoyaan platform integration planned
 - No existing test suite implemented
 - Clean git repository on main branch
 
@@ -115,3 +135,34 @@ npm run lint      # ESLint checking
 - **Modifying navigation**: Update `navigation/RootNavigator.tsx` or respective navigator files
 - **Styling changes**: Use NativeWind classes or update `app/global.css`
 - **Adding assets**: Place in appropriate `assets/` subdirectory and configure Metro if needed for new file types
+- **Order management features**: Implement in `app/(tabs)/orders/` directory
+- **Shop settings**: Add to `app/(tabs)/shop/` directory
+- **Financial features**: Develop in `app/(tabs)/finance/` directory
+- **Delivery management**: Build in `app/(tabs)/delivery/` directory
+
+### Key Shopkeeper Features to Implement
+
+1. **Order Dashboard**
+   - Real-time order notifications
+   - Order status management (pending, preparing, ready, delivered)
+   - Order details view with customer information
+
+2. **Shop Management**
+   - Operating hours configuration
+   - Shop availability toggle (open/closed)
+   - Menu/inventory management
+
+3. **Financial Operations**
+   - Invoice generation
+   - Refund processing
+   - Sales reports and analytics
+
+4. **Delivery Integration**
+   - Delivery partner assignment interface
+   - Tracking delivery status
+   - Communication with delivery partners
+
+5. **Customer Management**
+   - Customer order history
+   - Customer contact details
+   - Customer preferences and notes

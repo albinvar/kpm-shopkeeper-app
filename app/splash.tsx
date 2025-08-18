@@ -243,8 +243,11 @@ export default function SplashScreen() {
 
       {/* Brand name or tagline */}
       <Animated.View style={[textAnimatedStyle, { position: "absolute", bottom: height * 0.15 }]}>
-        <Text className="text-orange-500 text-lg font-bold tracking-widest">
-          LOADING EXCELLENCE
+        <Text className="text-orange-600 text-2xl font-bold tracking-wider text-center">
+          KPM Partner
+        </Text>
+        <Text className="text-orange-400 text-sm font-medium tracking-widest text-center mt-1">
+          SHOPKEEPER APP
         </Text>
       </Animated.View>
 

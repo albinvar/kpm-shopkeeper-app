@@ -242,10 +242,10 @@ export default function OnboardingScreen() {
               <Animated.View entering={FadeInUp.delay(300).springify()}>
                 <Text className="text-4xl font-bold text-gray-800 text-center mb-3">
                   Welcome to{" "}
-                  <Text className="text-orange-500">KPM</Text>
+                  <Text className="text-orange-500">KPM Partner</Text>
                 </Text>
                 <Text className="text-base text-gray-600 text-center px-8 mb-8">
-                  Your favorite local marketplace delivered fast to your doorstep
+                  Manage your shop, track orders, and grow your business with our partner platform
                 </Text>
               </Animated.View>
 
@@ -256,21 +256,21 @@ export default function OnboardingScreen() {
               >
                 <View className="items-center mx-4">
                   <View className="w-12 h-12 bg-orange-100 rounded-full items-center justify-center mb-2">
-                    <Text className="text-xl">🚀</Text>
+                    <Text className="text-xl">📋</Text>
                   </View>
-                  <Text className="text-xs text-gray-600">Fast</Text>
+                  <Text className="text-xs text-gray-600">Orders</Text>
                 </View>
                 <View className="items-center mx-4">
                   <View className="w-12 h-12 bg-orange-100 rounded-full items-center justify-center mb-2">
-                    <Text className="text-xl">🛍️</Text>
+                    <Text className="text-xl">💰</Text>
                   </View>
-                  <Text className="text-xs text-gray-600">Easy</Text>
+                  <Text className="text-xs text-gray-600">Finance</Text>
                 </View>
                 <View className="items-center mx-4">
                   <View className="w-12 h-12 bg-orange-100 rounded-full items-center justify-center mb-2">
-                    <Text className="text-xl">✨</Text>
+                    <Text className="text-xl">🚚</Text>
                   </View>
-                  <Text className="text-xs text-gray-600">Reliable</Text>
+                  <Text className="text-xs text-gray-600">Delivery</Text>
                 </View>
               </Animated.View>
             </View>
@@ -280,9 +280,9 @@ export default function OnboardingScreen() {
               entering={FadeInDown.delay(700).springify()}
               className="mb-4"
             >
-              {/* Get Started button with gradient */}
+              {/* Login button with gradient */}
               <TouchableOpacity
-                onPress={() => router.replace("/(auth)/register")}
+                onPress={() => router.replace("/(auth)/login")}
                 activeOpacity={0.9}
                 className="mb-4 overflow-hidden rounded-2xl"
                 style={{
@@ -301,28 +301,25 @@ export default function OnboardingScreen() {
                 >
                   <View className="flex-row items-center justify-center">
                     <Text className="text-white text-lg font-bold mr-2">
-                      Get Started
+                      Login to Your Shop
                     </Text>
                     <Text className="text-white text-lg">→</Text>
                   </View>
                 </LinearGradient>
               </TouchableOpacity>
 
-              {/* Login section */}
-              <View className="flex-row items-center justify-center py-2">
-                <Text className="text-gray-500">Already have an account? </Text>
-                <TouchableOpacity
-                  onPress={() => router.replace("/(auth)/login")}
-                  className="px-1 py-1"
-                >
-                  <Text className="text-orange-500 font-bold text-base">
-                    Sign In
-                  </Text>
-                </TouchableOpacity>
+              {/* Info text */}
+              <View className="bg-orange-50 rounded-xl p-4 mb-4">
+                <Text className="text-orange-800 text-sm text-center font-medium">
+                  📱 Partner Registration
+                </Text>
+                <Text className="text-orange-600 text-xs text-center mt-1">
+                  New partners must register through our web portal or contact support
+                </Text>
               </View>
 
               {/* Terms text */}
-              <Text className="text-xs text-gray-400 text-center mt-4">
+              <Text className="text-xs text-gray-400 text-center mt-2">
                 By continuing, you agree to our Terms & Privacy Policy
               </Text>
             </Animated.View>

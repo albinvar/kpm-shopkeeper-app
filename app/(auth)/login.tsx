@@ -125,7 +125,7 @@ export default function LoginScreen() {
                   Welcome Back
                 </Text>
                 <Text className="text-gray-700 text-center text-base drop-shadow-sm">
-                  Sign in to your KPM account to continue
+                  Sign in to your KPM Partner account to continue
                 </Text>
               </View>
             </View>

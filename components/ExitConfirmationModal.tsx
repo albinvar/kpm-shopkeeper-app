@@ -34,7 +34,7 @@ export default function ExitConfirmationModal({
   onCancel,
   onConfirm,
   title = "Exit App?",
-  message = "Are you sure you want to exit KPM?",
+  message = "Are you sure you want to exit KPM Partner?",
   cancelText = "Stay",
   confirmText = "Exit",
   icon = "exit-outline",
