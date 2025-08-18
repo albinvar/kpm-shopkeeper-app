@@ -247,7 +247,7 @@ export default function SplashScreen() {
           KPM Partner
         </Text>
         <Text className="text-orange-400 text-sm font-medium tracking-widest text-center mt-1">
-          SHOPKEEPER APP
+          FOR BUSINESS
         </Text>
       </Animated.View>
 

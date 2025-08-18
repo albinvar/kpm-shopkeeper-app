@@ -65,15 +65,21 @@ export default function LoginScreen() {
         <KeyboardAvoidingView
           className="flex-1"
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
         >
-          <View className="flex-1">
+          <ScrollView 
+            className="flex-1"
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
             {/* Creative Top Section with Dynamic Background */}
             <View 
-              className="items-center justify-center px-4 relative overflow-hidden flex-1"
+              className="items-center justify-center px-4 relative overflow-hidden"
               style={{ 
                 paddingTop: insets.top + 10,
-                minHeight: Platform.OS === "ios" ? 300 : 280
+                minHeight: Platform.OS === "ios" ? 280 : 260,
+                maxHeight: Platform.OS === "ios" ? 350 : 320
               }}
             >
             {/* Creative Background Elements */}
@@ -134,7 +140,7 @@ export default function LoginScreen() {
             {/* Rising Bottom Section with Rounded Corners - Anchored to bottom */}
             <Animated.View 
               entering={FadeInUp.delay(300).springify()}
-              className="bg-white shadow-xl rounded-t-[48px] px-6 pt-8 pb-8"
+              className="bg-white shadow-xl rounded-t-[48px] px-6 pt-8 pb-4"
               style={{
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: -8 },
@@ -206,7 +212,7 @@ export default function LoginScreen() {
               }
             }}
             activeOpacity={0.85}
-            className="mb-12"
+            className="mb-6"
             disabled={!isValidPhone}
             style={{
               shadowColor: "#f97316",
@@ -246,7 +252,7 @@ export default function LoginScreen() {
             </View>
             </View>
             </Animated.View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
     </>
