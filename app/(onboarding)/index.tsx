@@ -1,5 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, router } from "expo-router";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect } from "react";
 import {
   Dimensions,
@@ -282,7 +283,10 @@ export default function OnboardingScreen() {
             >
               {/* Login button with gradient */}
               <TouchableOpacity
-                onPress={() => router.replace("/(auth)/login")}
+                onPress={async () => {
+                  await AsyncStorage.setItem('hasSeenOnboarding', 'true');
+                  router.replace("/(auth)/login");
+                }}
                 activeOpacity={0.9}
                 className="mb-4 overflow-hidden rounded-2xl"
                 style={{

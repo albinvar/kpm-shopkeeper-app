@@ -147,7 +147,7 @@ export default function OtpScreen() {
               className="items-center w-full mb-8"
             >
               <TouchableOpacity
-                onPress={() => router.push("/(auth)/location")}
+                onPress={() => router.push("/(auth)/initializing")}
                 activeOpacity={0.9}
                 style={{
                   shadowColor: "#f97316",
