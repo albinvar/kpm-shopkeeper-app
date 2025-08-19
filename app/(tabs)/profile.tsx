@@ -1,11 +1,16 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 
-export default function ProfileScreen() {
+export default function SettingsScreen({ onBack }) {
   const { logout, user } = useAuth();
+  const insets = useSafeAreaInsets();
+  const [notifications, setNotifications] = useState(true);
+  const [orderAlerts, setOrderAlerts] = useState(true);
+  const [autoAccept, setAutoAccept] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   const handleLogout = () => {
     Alert.alert(
@@ -22,61 +27,168 @@ export default function ProfileScreen() {
     );
   };
 
+  const settingsSections = [
+    {
+      title: 'Account & Shop',
+      items: [
+        { icon: 'storefront-outline', title: 'Shop Profile', subtitle: 'Edit shop details and information', action: 'navigate' },
+        { icon: 'business-outline', title: 'Business Information', subtitle: 'Tax details, licenses, documents', action: 'navigate' },
+        { icon: 'card-outline', title: 'Payment Settings', subtitle: 'Bank account, payment methods', action: 'navigate' },
+        { icon: 'time-outline', title: 'Operating Hours', subtitle: 'Set your shop timing', action: 'navigate' },
+      ]
+    },
+    {
+      title: 'Orders & Delivery',
+      items: [
+        { icon: 'bicycle-outline', title: 'Delivery Settings', subtitle: 'Radius, charges, delivery partners', action: 'navigate' },
+        { icon: 'list-outline', title: 'Order Management', subtitle: 'Auto-accept, preparation time', action: 'navigate' },
+        { icon: 'pricetag-outline', title: 'Pricing & Offers', subtitle: 'Discounts, promotions, pricing', action: 'navigate' },
+        { icon: 'analytics-outline', title: 'Sales Reports', subtitle: 'View detailed sales analytics', action: 'navigate' },
+      ]
+    },
+    {
+      title: 'Notifications',
+      items: [
+        { icon: 'notifications-outline', title: 'Push Notifications', subtitle: 'General app notifications', action: 'toggle', value: notifications, setter: setNotifications },
+        { icon: 'alert-circle-outline', title: 'Order Alerts', subtitle: 'New order sound notifications', action: 'toggle', value: orderAlerts, setter: setOrderAlerts },
+        { icon: 'checkmark-circle-outline', title: 'Auto Accept Orders', subtitle: 'Automatically accept new orders', action: 'toggle', value: autoAccept, setter: setAutoAccept },
+      ]
+    },
+    {
+      title: 'App Settings',
+      items: [
+        { icon: 'language-outline', title: 'Language', subtitle: 'English', action: 'navigate' },
+        { icon: 'moon-outline', title: 'Dark Mode', subtitle: 'Toggle dark theme', action: 'toggle', value: darkMode, setter: setDarkMode },
+        { icon: 'cloud-download-outline', title: 'Data Backup', subtitle: 'Backup your shop data', action: 'navigate' },
+        { icon: 'refresh-outline', title: 'App Version', subtitle: 'v1.2.4 - Check for updates', action: 'navigate' },
+      ]
+    },
+    {
+      title: 'Support & Legal',
+      items: [
+        { icon: 'help-circle-outline', title: 'Help & Support', subtitle: 'FAQs, contact support', action: 'navigate' },
+        { icon: 'chatbubble-outline', title: 'Feedback', subtitle: 'Send feedback and suggestions', action: 'navigate' },
+        { icon: 'document-text-outline', title: 'Terms & Conditions', subtitle: 'Read terms of service', action: 'navigate' },
+        { icon: 'shield-checkmark-outline', title: 'Privacy Policy', subtitle: 'How we protect your data', action: 'navigate' },
+      ]
+    }
+  ];
+
+  const renderSettingItem = (item, isLast = false) => (
+    <TouchableOpacity 
+      key={item.title}
+      className={`flex-row items-center py-4 ${!isLast ? 'border-b border-gray-100' : ''}`}
+      activeOpacity={0.7}
+    >
+      <View className="w-10 h-10 bg-orange-100 rounded-full items-center justify-center mr-4">
+        <Ionicons name={item.icon as any} size={20} color="#f97316" />
+      </View>
+      <View className="flex-1">
+        <Text className="text-gray-900 font-medium text-base">{item.title}</Text>
+        <Text className="text-gray-500 text-sm mt-0.5">{item.subtitle}</Text>
+      </View>
+      {item.action === 'toggle' ? (
+        <Switch
+          value={item.value}
+          onValueChange={item.setter}
+          trackColor={{ false: '#f3f4f6', true: '#fed7aa' }}
+          thumbColor={item.value ? '#f97316' : '#ffffff'}
+          ios_backgroundColor="#f3f4f6"
+        />
+      ) : (
+        <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+      )}
+    </TouchableOpacity>
+  );
+
   return (
     <View className="flex-1 bg-gray-50">
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" translucent={false} />
+      
       {/* Header */}
-      <LinearGradient
-        colors={["#f97316", "#fb923c"]}
-        style={{ paddingTop: 60, paddingBottom: 30, paddingHorizontal: 20 }}
+      <View 
+        className="bg-white px-5 pb-4 border-b border-gray-100"
+        style={{ paddingTop: insets.top + 16 }}
       >
-        <View className="items-center">
-          <View className="w-20 h-20 bg-white/20 rounded-full items-center justify-center mb-4">
-            <Ionicons name="person" size={40} color="white" />
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center flex-1">
+            {onBack && (
+              <TouchableOpacity 
+                className="w-10 h-10 items-center justify-center mr-3"
+                onPress={onBack}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="arrow-back" size={24} color="#374151" />
+              </TouchableOpacity>
+            )}
+            <View className="flex-1">
+              <Text className="text-gray-900 text-2xl font-bold">Settings</Text>
+              <Text className="text-gray-500 text-sm mt-1">Manage your shop preferences</Text>
+            </View>
           </View>
-          <Text className="text-white text-xl font-bold">
-            {user?.shopName || 'KPM Partner Store'}
-          </Text>
-          <Text className="text-orange-100 text-sm">
-            {user?.phone || '+91 98765 43210'}
-          </Text>
+          <View className="w-12 h-12 bg-orange-100 rounded-full items-center justify-center">
+            <Ionicons name="settings" size={24} color="#f97316" />
+          </View>
         </View>
-      </LinearGradient>
+      </View>
 
-      {/* Profile Options */}
-      <View className="flex-1 px-4 py-6">
-        <View className="bg-white rounded-2xl shadow-sm p-4 mb-4">
-          <Text className="text-gray-800 font-semibold text-lg mb-4">Account</Text>
-          
-          <TouchableOpacity className="flex-row items-center py-3 border-b border-gray-100">
-            <Ionicons name="business" size={20} color="#f97316" />
-            <Text className="flex-1 ml-3 text-gray-700">Shop Details</Text>
-            <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
-          </TouchableOpacity>
-
-          <TouchableOpacity className="flex-row items-center py-3 border-b border-gray-100">
-            <Ionicons name="settings" size={20} color="#f97316" />
-            <Text className="flex-1 ml-3 text-gray-700">Settings</Text>
-            <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
-          </TouchableOpacity>
-
-          <TouchableOpacity className="flex-row items-center py-3">
-            <Ionicons name="help-circle" size={20} color="#f97316" />
-            <Text className="flex-1 ml-3 text-gray-700">Help & Support</Text>
-            <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
-          </TouchableOpacity>
+      <ScrollView 
+        className="flex-1 px-4"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: 20, paddingBottom: 20 }}
+      >
+        {/* Shop Info Card */}
+        <View className="bg-white rounded-2xl p-4 mb-6 shadow-sm">
+          <View className="flex-row items-center">
+            <View className="w-16 h-16 bg-orange-100 rounded-2xl items-center justify-center mr-4">
+              <Ionicons name="storefront" size={28} color="#f97316" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-gray-900 font-bold text-lg">
+                {user?.shopName || 'Madhav Stores'}
+              </Text>
+              <Text className="text-gray-500 text-sm">
+                {user?.phone || '+91 98765 43210'}
+              </Text>
+              <View className="flex-row items-center mt-1">
+                <View className="w-2 h-2 bg-green-500 rounded-full mr-2" />
+                <Text className="text-green-600 text-xs font-medium">Active</Text>
+              </View>
+            </View>
+            <TouchableOpacity className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center">
+              <Ionicons name="create-outline" size={16} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
         </View>
+
+        {/* Settings Sections */}
+        {settingsSections.map((section, sectionIndex) => (
+          <View key={section.title} className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
+            <Text className="text-gray-900 font-bold text-base mb-4">{section.title}</Text>
+            {section.items.map((item, itemIndex) => 
+              renderSettingItem(item, itemIndex === section.items.length - 1)
+            )}
+          </View>
+        ))}
 
         {/* Logout Button */}
         <TouchableOpacity
           onPress={handleLogout}
-          className="bg-white rounded-2xl shadow-sm p-4"
+          className="bg-white rounded-2xl shadow-sm p-4 mb-4"
+          activeOpacity={0.8}
         >
           <View className="flex-row items-center justify-center">
-            <Ionicons name="log-out" size={20} color="#ef4444" />
-            <Text className="ml-2 text-red-500 font-semibold">Logout</Text>
+            <Ionicons name="log-out-outline" size={24} color="#ef4444" />
+            <Text className="ml-3 text-red-500 font-semibold text-lg">Logout</Text>
           </View>
         </TouchableOpacity>
-      </View>
+
+        {/* App Info */}
+        <View className="items-center py-4">
+          <Text className="text-gray-400 text-sm">KPM Partner v1.2.4</Text>
+          <Text className="text-gray-400 text-xs mt-1">Made with ❤️ for local businesses</Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }

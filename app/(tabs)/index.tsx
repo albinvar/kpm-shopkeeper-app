@@ -12,7 +12,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 
-export default function DashboardScreen() {
+export default function DashboardScreen({ onNavigateToSettings }) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -359,7 +359,11 @@ export default function DashboardScreen() {
               <Text className="text-gray-500 text-sm ml-1">Kottayam, Kerala</Text>
             </View>
           </View>
-          <TouchableOpacity className="w-10 h-10 items-center justify-center">
+          <TouchableOpacity 
+            className="w-10 h-10 items-center justify-center"
+            onPress={onNavigateToSettings}
+            activeOpacity={0.7}
+          >
             <Ionicons name="settings-outline" size={24} color="#374151" />
           </TouchableOpacity>
         </View>
