@@ -8,11 +8,13 @@ interface AuthContextType {
   isLoading: boolean;
   sendOtp: (phone: string) => Promise<{ success: boolean; message: string; otp?: string }>;
   verifyOtpAndLogin: (phone: string, otp: string) => Promise<{ success: boolean; message: string }>;
+  completeLogin: () => Promise<void>;
   logout: () => Promise<void>;
   user: User | null;
   shop: Shop | null;
   phoneNumber: string | null;
   setPhoneNumber: (phone: string) => void;
+  pendingAuthData: { user: User; shop: Shop; token: string } | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [shop, setShop] = useState<Shop | null>(null);
   const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
+  const [pendingAuthData, setPendingAuthData] = useState<{ user: User; shop: Shop; token: string } | null>(null);
 
   // Check if user is logged in on app start
   useEffect(() => {
@@ -93,14 +96,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await authService.verifyOtp(formattedPhone, otp);
 
       if (response.status === 'success' && response.data) {
-        // Save token and user data
-        await AsyncStorage.setItem('authToken', response.data.token);
-        await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-        await AsyncStorage.setItem('shopData', JSON.stringify(response.data.shop));
-
-        setIsAuthenticated(true);
-        setUser(response.data.user);
-        setShop(response.data.shop);
+        // Store auth data temporarily without setting authenticated state
+        // This allows us to show the initializing screen first
+        setPendingAuthData({
+          user: response.data.user,
+          shop: response.data.shop,
+          token: response.data.token,
+        });
 
         return {
           success: true,
@@ -118,6 +120,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         success: false,
         message: error.message || 'Invalid or expired OTP',
       };
+    }
+  };
+
+  const completeLogin = async () => {
+    try {
+      if (!pendingAuthData) {
+        throw new Error('No pending authentication data');
+      }
+
+      // Save token and user data to storage
+      await AsyncStorage.setItem('authToken', pendingAuthData.token);
+      await AsyncStorage.setItem('userData', JSON.stringify(pendingAuthData.user));
+      await AsyncStorage.setItem('shopData', JSON.stringify(pendingAuthData.shop));
+
+      // Update auth state
+      setIsAuthenticated(true);
+      setUser(pendingAuthData.user);
+      setShop(pendingAuthData.shop);
+      setPendingAuthData(null);
+    } catch (error) {
+      console.error('Complete login error:', error);
+      throw error;
     }
   };
 
@@ -143,11 +167,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         sendOtp,
         verifyOtpAndLogin,
+        completeLogin,
         logout,
         user,
         shop,
         phoneNumber,
         setPhoneNumber,
+        pendingAuthData,
       }}
     >
       {children}

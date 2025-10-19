@@ -28,7 +28,7 @@ const { width, height } = Dimensions.get("window");
 
 export default function InitializingScreen() {
   const insets = useSafeAreaInsets();
-  const { login } = useAuth();
+  const { completeLogin } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   
   // Animation values
@@ -165,14 +165,14 @@ export default function InitializingScreen() {
       withTiming(0, { duration: 0 })
     );
 
-    // Complete login and restart app flow
+    // Complete login and show splash screen
     setTimeout(async () => {
       try {
-        await login();
-        // Restart app flow by going to splash which will redirect to main app
+        await completeLogin();
+        // Navigate to splash which will show briefly before redirecting to dashboard
         router.replace("/splash");
       } catch (error) {
-        console.error("Login failed:", error);
+        console.error("Login completion failed:", error);
       }
     }, 1000);
   };

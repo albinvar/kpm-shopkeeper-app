@@ -187,8 +187,8 @@ export default function OtpScreen() {
                     const result = await verifyOtpAndLogin(phoneNumber, otpString);
 
                     if (result.success) {
-                      // AuthContext will automatically redirect to main app
-                      // No need to manually navigate
+                      // Navigate to initializing screen to show setup animation
+                      router.replace('/(auth)/initializing');
                     } else {
                       setErrorModal({
                         visible: true,
