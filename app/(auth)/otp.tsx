@@ -1,9 +1,19 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router, Stack } from "expo-router";
 import React, { useRef, useState } from "react";
-import { Dimensions, Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+  Alert
+} from "react-native";
 import Animated, { FadeInUp, FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "../../contexts/AuthContext";
 
 const { width } = Dimensions.get("window");
 
@@ -11,6 +21,9 @@ export default function OtpScreen() {
   const insets = useSafeAreaInsets();
   const [otp, setOtp] = useState(["", "", "", ""]);
   const inputRefs = useRef<(TextInput | null)[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const { verifyOtpAndLogin, phoneNumber, sendOtp } = useAuth();
 
   const handleOtpChange = (text: string, index: number) => {
     const newOtp = [...otp];
@@ -142,13 +155,41 @@ export default function OtpScreen() {
             </Animated.View>
 
             {/* Button */}
-            <Animated.View 
+            <Animated.View
               entering={FadeInUp.delay(500)}
               className="items-center w-full mb-8"
             >
               <TouchableOpacity
-                onPress={() => router.push("/(auth)/initializing")}
+                onPress={async () => {
+                  const otpString = otp.join('');
+                  if (otpString.length !== 4) {
+                    Alert.alert('Error', 'Please enter a complete 4-digit OTP');
+                    return;
+                  }
+
+                  if (!phoneNumber) {
+                    Alert.alert('Error', 'Phone number not found. Please go back and try again.');
+                    return;
+                  }
+
+                  setIsLoading(true);
+                  try {
+                    const result = await verifyOtpAndLogin(phoneNumber, otpString);
+
+                    if (result.success) {
+                      // Navigate to initializing screen or dashboard
+                      router.push("/(auth)/initializing");
+                    } else {
+                      Alert.alert('Error', result.message);
+                    }
+                  } catch (error: any) {
+                    Alert.alert('Error', error.message || 'Failed to verify OTP');
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
                 activeOpacity={0.9}
+                disabled={isLoading || otp.join('').length !== 4}
                 style={{
                   shadowColor: "#f97316",
                   shadowOffset: { width: 0, height: 6 },
@@ -158,9 +199,9 @@ export default function OtpScreen() {
                 }}
               >
                 <LinearGradient
-                  colors={["#f97316", "#fb923c"]}
-                  style={{ 
-                    paddingVertical: 16, 
+                  colors={otp.join('').length === 4 && !isLoading ? ["#f97316", "#fb923c"] : ["#d1d5db", "#9ca3af"]}
+                  style={{
+                    paddingVertical: 16,
                     paddingHorizontal: 40,
                     borderRadius: 16,
                     width: width * 0.75,
@@ -169,9 +210,13 @@ export default function OtpScreen() {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Text className="text-lg font-bold text-white">
-                    Verify Now
-                  </Text>
+                  {isLoading ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <Text className={`text-lg font-bold ${otp.join('').length === 4 ? 'text-white' : 'text-gray-400'}`}>
+                      Verify Now
+                    </Text>
+                  )}
                 </LinearGradient>
               </TouchableOpacity>
             </Animated.View>
@@ -180,8 +225,29 @@ export default function OtpScreen() {
             <Animated.View entering={FadeInDown.delay(600)}>
               <Text className="text-base text-center text-gray-600 mb-12">
                 Didn't receive the code?{' '}
-                <Text className="text-orange-500 font-semibold">
-                  Resend
+                <Text
+                  className={`font-semibold ${isResending ? 'text-gray-400' : 'text-orange-500'}`}
+                  onPress={async () => {
+                    if (isResending || !phoneNumber) return;
+
+                    setIsResending(true);
+                    try {
+                      const result = await sendOtp(phoneNumber);
+                      if (result.success) {
+                        Alert.alert('Success', 'OTP resent successfully' + (result.otp && __DEV__ ? `\nYour OTP: ${result.otp}` : ''));
+                        // Clear existing OTP
+                        setOtp(["", "", "", ""]);
+                      } else {
+                        Alert.alert('Error', result.message);
+                      }
+                    } catch (error: any) {
+                      Alert.alert('Error', error.message || 'Failed to resend OTP');
+                    } finally {
+                      setIsResending(false);
+                    }
+                  }}
+                >
+                  {isResending ? 'Sending...' : 'Resend'}
                 </Text>
               </Text>
             </Animated.View>

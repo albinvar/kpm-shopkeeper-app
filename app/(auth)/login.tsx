@@ -9,6 +9,8 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Animated, {
@@ -16,6 +18,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LogoSvg from "../../assets/onboarding/hero.svg";
+import { useAuth } from "../../contexts/AuthContext";
 
 const { width, height } = Dimensions.get("window");
 
@@ -23,6 +26,8 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isValidPhone, setIsValidPhone] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { sendOtp, setPhoneNumber: setGlobalPhone } = useAuth();
 
   const formatPhoneNumber = (text: string) => {
     // Remove all non-numeric characters
@@ -206,26 +211,48 @@ export default function LoginScreen() {
 
             {/* Get Started Button */}
             <TouchableOpacity
-              onPress={() => {
-                if (isValidPhone) {
-                  router.push("/(auth)/otp");
+              onPress={async () => {
+                if (isValidPhone && !isLoading) {
+                  setIsLoading(true);
+                  try {
+                    const numericPhone = phoneNumber.replace(/\D/g, '');
+                    const result = await sendOtp(numericPhone);
+
+                    if (result.success) {
+                      // Save phone number globally for OTP verification screen
+                      setGlobalPhone(numericPhone);
+
+                      // Show OTP in dev mode (if provided)
+                      if (result.otp && __DEV__) {
+                        Alert.alert('OTP Sent', `Your OTP is: ${result.otp}`);
+                      }
+
+                      router.push("/(auth)/otp");
+                    } else {
+                      Alert.alert('Error', result.message);
+                    }
+                  } catch (error: any) {
+                    Alert.alert('Error', error.message || 'Failed to send OTP');
+                  } finally {
+                    setIsLoading(false);
+                  }
                 }
               }}
               activeOpacity={0.85}
               className="mb-6"
-              disabled={!isValidPhone}
+              disabled={!isValidPhone || isLoading}
               style={{
                 shadowColor: "#f97316",
                 shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: isValidPhone ? 0.25 : 0.1,
+                shadowOpacity: isValidPhone && !isLoading ? 0.25 : 0.1,
                 shadowRadius: 12,
                 elevation: 8,
               }}
             >
               <LinearGradient
-                colors={isValidPhone ? ["#f97316", "#fb923c"] : ["#d1d5db", "#9ca3af"]}
-                style={{ 
-                  paddingVertical: 18, 
+                colors={isValidPhone && !isLoading ? ["#f97316", "#fb923c"] : ["#d1d5db", "#9ca3af"]}
+                style={{
+                  paddingVertical: 18,
                   paddingHorizontal: 32,
                   borderRadius: 16,
                 }}
@@ -233,10 +260,16 @@ export default function LoginScreen() {
                 end={{ x: 1, y: 0 }}
               >
                 <View className="flex-row items-center justify-center">
-                  <Text className={`text-lg font-bold mr-2 ${isValidPhone ? 'text-white' : 'text-gray-400'}`}>
-                    Get Started
-                  </Text>
-                  <Text className={`text-lg ${isValidPhone ? 'text-white' : 'text-gray-400'}`}>→</Text>
+                  {isLoading ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <>
+                      <Text className={`text-lg font-bold mr-2 ${isValidPhone ? 'text-white' : 'text-gray-400'}`}>
+                        Get Started
+                      </Text>
+                      <Text className={`text-lg ${isValidPhone ? 'text-white' : 'text-gray-400'}`}>→</Text>
+                    </>
+                  )}
                 </View>
               </LinearGradient>
             </TouchableOpacity>
