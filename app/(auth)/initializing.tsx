@@ -165,12 +165,11 @@ export default function InitializingScreen() {
       withTiming(0, { duration: 0 })
     );
 
-    // Complete login and show splash screen
+    // Complete login - auth state change will trigger automatic navigation
     setTimeout(async () => {
       try {
         await completeLogin();
-        // Navigate to splash which will show briefly before redirecting to dashboard
-        router.replace("/splash");
+        // RootNavigator will automatically redirect to dashboard when auth state changes
       } catch (error) {
         console.error("Login completion failed:", error);
       }
