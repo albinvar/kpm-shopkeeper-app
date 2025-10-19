@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, StatusBar, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,17 +11,27 @@ export default function SettingsScreen({ onBack }) {
   const [orderAlerts, setOrderAlerts] = useState(true);
   const [autoAccept, setAutoAccept] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = () => {
     Alert.alert(
       'Logout',
-      'Are you sure you want to logout?',
+      'Are you sure you want to logout from your account?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
+        {
+          text: 'Logout',
           style: 'destructive',
-          onPress: logout 
+          onPress: async () => {
+            setIsLoggingOut(true);
+            try {
+              await logout();
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+              setIsLoggingOut(false);
+            }
+          }
         },
       ]
     );
@@ -176,10 +186,17 @@ export default function SettingsScreen({ onBack }) {
           onPress={handleLogout}
           className="bg-white rounded-2xl shadow-sm p-4 mb-4"
           activeOpacity={0.8}
+          disabled={isLoggingOut}
         >
           <View className="flex-row items-center justify-center">
-            <Ionicons name="log-out-outline" size={24} color="#ef4444" />
-            <Text className="ml-3 text-red-500 font-semibold text-lg">Logout</Text>
+            {isLoggingOut ? (
+              <ActivityIndicator size="small" color="#ef4444" />
+            ) : (
+              <>
+                <Ionicons name="log-out-outline" size={24} color="#ef4444" />
+                <Text className="ml-3 text-red-500 font-semibold text-lg">Logout</Text>
+              </>
+            )}
           </View>
         </TouchableOpacity>
 

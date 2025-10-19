@@ -9,11 +9,11 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
-  Alert
 } from "react-native";
 import Animated, { FadeInUp, FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
+import ErrorModal from "../../components/ErrorModal";
 
 const { width } = Dimensions.get("window");
 
@@ -23,6 +23,8 @@ export default function OtpScreen() {
   const inputRefs = useRef<(TextInput | null)[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [errorModal, setErrorModal] = useState({ visible: false, message: '', title: 'Error' });
+  const [successModal, setSuccessModal] = useState({ visible: false, message: '' });
   const { verifyOtpAndLogin, phoneNumber, sendOtp } = useAuth();
 
   const handleOtpChange = (text: string, index: number) => {
@@ -163,12 +165,20 @@ export default function OtpScreen() {
                 onPress={async () => {
                   const otpString = otp.join('');
                   if (otpString.length !== 4) {
-                    Alert.alert('Error', 'Please enter a complete 4-digit OTP');
+                    setErrorModal({
+                      visible: true,
+                      title: 'Incomplete OTP',
+                      message: 'Please enter all 4 digits of the OTP code.',
+                    });
                     return;
                   }
 
                   if (!phoneNumber) {
-                    Alert.alert('Error', 'Phone number not found. Please go back and try again.');
+                    setErrorModal({
+                      visible: true,
+                      title: 'Error',
+                      message: 'Phone number not found. Please go back and try again.',
+                    });
                     return;
                   }
 
@@ -177,13 +187,21 @@ export default function OtpScreen() {
                     const result = await verifyOtpAndLogin(phoneNumber, otpString);
 
                     if (result.success) {
-                      // Navigate to initializing screen or dashboard
-                      router.push("/(auth)/initializing");
+                      // AuthContext will automatically redirect to main app
+                      // No need to manually navigate
                     } else {
-                      Alert.alert('Error', result.message);
+                      setErrorModal({
+                        visible: true,
+                        title: 'Verification Failed',
+                        message: result.message,
+                      });
                     }
                   } catch (error: any) {
-                    Alert.alert('Error', error.message || 'Failed to verify OTP');
+                    setErrorModal({
+                      visible: true,
+                      title: 'Verification Failed',
+                      message: error.message || 'Failed to verify OTP',
+                    });
                   } finally {
                     setIsLoading(false);
                   }
@@ -234,14 +252,25 @@ export default function OtpScreen() {
                     try {
                       const result = await sendOtp(phoneNumber);
                       if (result.success) {
-                        Alert.alert('Success', 'OTP resent successfully' + (result.otp && __DEV__ ? `\nYour OTP: ${result.otp}` : ''));
+                        setSuccessModal({
+                          visible: true,
+                          message: 'OTP has been resent successfully. Please check your phone.',
+                        });
                         // Clear existing OTP
                         setOtp(["", "", "", ""]);
                       } else {
-                        Alert.alert('Error', result.message);
+                        setErrorModal({
+                          visible: true,
+                          title: 'Resend Failed',
+                          message: result.message,
+                        });
                       }
                     } catch (error: any) {
-                      Alert.alert('Error', error.message || 'Failed to resend OTP');
+                      setErrorModal({
+                        visible: true,
+                        title: 'Resend Failed',
+                        message: error.message || 'Failed to resend OTP',
+                      });
                     } finally {
                       setIsResending(false);
                     }
@@ -254,6 +283,23 @@ export default function OtpScreen() {
           </View>
         </View>
       </LinearGradient>
+
+      {/* Error Modal */}
+      <ErrorModal
+        visible={errorModal.visible}
+        title={errorModal.title}
+        message={errorModal.message}
+        onClose={() => setErrorModal({ visible: false, message: '', title: 'Error' })}
+      />
+
+      {/* Success Modal */}
+      <ErrorModal
+        visible={successModal.visible}
+        title="Success!"
+        message={successModal.message}
+        type="info"
+        onClose={() => setSuccessModal({ visible: false, message: '' })}
+      />
     </>
   );
 }

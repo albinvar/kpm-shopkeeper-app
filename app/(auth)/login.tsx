@@ -10,7 +10,6 @@ import {
   View,
   Dimensions,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Animated, {
@@ -19,6 +18,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LogoSvg from "../../assets/onboarding/hero.svg";
 import { useAuth } from "../../contexts/AuthContext";
+import ErrorModal from "../../components/ErrorModal";
 
 const { width, height } = Dimensions.get("window");
 
@@ -27,6 +27,7 @@ export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isValidPhone, setIsValidPhone] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorModal, setErrorModal] = useState({ visible: false, message: '', title: 'Error' });
   const { sendOtp, setPhoneNumber: setGlobalPhone } = useAuth();
 
   const formatPhoneNumber = (text: string) => {
@@ -221,18 +222,23 @@ export default function LoginScreen() {
                     if (result.success) {
                       // Save phone number globally for OTP verification screen
                       setGlobalPhone(numericPhone);
-
-                      // Show OTP in dev mode (if provided)
-                      if (result.otp && __DEV__) {
-                        Alert.alert('OTP Sent', `Your OTP is: ${result.otp}`);
-                      }
-
                       router.push("/(auth)/otp");
                     } else {
-                      Alert.alert('Error', result.message);
+                      // Check if it's a user not found error
+                      const isUserNotFound = result.message.toLowerCase().includes('not found');
+                      setErrorModal({
+                        visible: true,
+                        title: isUserNotFound ? 'Account Not Found' : 'Error',
+                        message: result.message,
+                      });
                     }
                   } catch (error: any) {
-                    Alert.alert('Error', error.message || 'Failed to send OTP');
+                    const isUserNotFound = error.message?.toLowerCase().includes('not found');
+                    setErrorModal({
+                      visible: true,
+                      title: isUserNotFound ? 'Account Not Found' : 'Error',
+                      message: error.message || 'Failed to send OTP',
+                    });
                   } finally {
                     setIsLoading(false);
                   }
@@ -287,6 +293,14 @@ export default function LoginScreen() {
           </Animated.View>
         </KeyboardAwareScrollView>
       </LinearGradient>
+
+      {/* Error Modal */}
+      <ErrorModal
+        visible={errorModal.visible}
+        title={errorModal.title}
+        message={errorModal.message}
+        onClose={() => setErrorModal({ visible: false, message: '', title: 'Error' })}
+      />
     </>
   );
 }

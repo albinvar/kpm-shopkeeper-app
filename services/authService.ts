@@ -53,11 +53,22 @@ class AuthService {
   private handleError(error: any): Error {
     if (error.response) {
       // Server responded with error
-      const message = error.response.data?.message || 'An error occurred';
-      return new Error(message);
+      const status = error.response.status;
+      const message = error.response.data?.message;
+
+      // Handle specific error codes
+      if (status === 404) {
+        return new Error(message || 'User not found. Please register to continue.');
+      } else if (status === 401) {
+        return new Error(message || 'Invalid or expired OTP. Please try again.');
+      } else if (status === 400) {
+        return new Error(message || 'Invalid request. Please check your input.');
+      } else {
+        return new Error(message || 'An error occurred. Please try again.');
+      }
     } else if (error.request) {
       // Request made but no response
-      return new Error('Network error. Please check your connection.');
+      return new Error('Network error. Please check your internet connection.');
     } else {
       // Something else happened
       return new Error(error.message || 'An unexpected error occurred');
