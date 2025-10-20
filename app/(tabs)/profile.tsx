@@ -1,17 +1,29 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, StatusBar, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, StatusBar, ActivityIndicator, BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
+import { useRouter } from 'expo-router';
 
 export default function SettingsScreen({ onBack }) {
   const { logout, user, shop } = useAuth();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [notifications, setNotifications] = useState(true);
   const [orderAlerts, setOrderAlerts] = useState(true);
   const [autoAccept, setAutoAccept] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Handle back button - navigate to home tab instead of exit
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      router.push('/(tabs)');
+      return true; // Prevent default behavior
+    });
+
+    return () => backHandler.remove();
+  }, []);
 
   const handleLogout = () => {
     Alert.alert(

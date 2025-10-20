@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, StatusBar, Modal, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, StatusBar, Modal, ActivityIndicator, RefreshControl, BackHandler, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useSharedValue,
@@ -37,6 +37,19 @@ export default function DashboardScreen({ onNavigateToSettings }) {
 
   // Refresh state
   const [refreshing, setRefreshing] = useState(false);
+
+  // Exit app state
+  const [showExitModal, setShowExitModal] = useState(false);
+
+  // Handle back button press - show exit confirmation
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      setShowExitModal(true);
+      return true; // Prevent default behavior
+    });
+
+    return () => backHandler.remove();
+  }, []);
 
   // Fetch dashboard stats
   useEffect(() => {
@@ -1114,6 +1127,52 @@ export default function DashboardScreen({ onNavigateToSettings }) {
         message={statsError || ''}
         onClose={() => setStatsError(null)}
       />
+
+      {/* Exit Confirmation Modal */}
+      <Modal
+        visible={showExitModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowExitModal(false)}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center px-6">
+          <View className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-lg">
+            {/* Icon */}
+            <View className="w-16 h-16 bg-orange-100 rounded-full items-center justify-center mx-auto mb-4">
+              <Ionicons name="exit-outline" size={32} color="#f97316" />
+            </View>
+
+            {/* Title */}
+            <Text className="text-gray-900 text-xl font-bold text-center mb-2">
+              Exit App?
+            </Text>
+
+            {/* Message */}
+            <Text className="text-gray-500 text-center mb-6">
+              Are you sure you want to exit KPM Partner?
+            </Text>
+
+            {/* Buttons */}
+            <View className="flex-row space-x-3">
+              <TouchableOpacity
+                className="flex-1 bg-gray-100 py-3 rounded-xl"
+                activeOpacity={0.8}
+                onPress={() => setShowExitModal(false)}
+              >
+                <Text className="text-gray-700 font-semibold text-center">Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex-1 bg-orange-500 py-3 rounded-xl"
+                activeOpacity={0.8}
+                onPress={() => BackHandler.exitApp()}
+              >
+                <Text className="text-white font-semibold text-center">Exit</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
