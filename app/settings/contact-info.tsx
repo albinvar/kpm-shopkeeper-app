@@ -5,10 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { router } from 'expo-router';
 import shopService from '../../services/shopService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ContactInfoScreen() {
   const insets = useSafeAreaInsets();
-  const { shop } = useAuth();
+  const { shop, setShop } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
 
   // Form state
@@ -92,7 +93,12 @@ export default function ContactInfoScreen() {
         whatsapp: formatPhone(whatsapp),
       });
 
-      if (response.status === 'success') {
+      if (response.status === 'success' && response.data) {
+        // Update shop in context and storage
+        const updatedShop = { ...shop, ...response.data.shop };
+        setShop(updatedShop);
+        await AsyncStorage.setItem('shopData', JSON.stringify(updatedShop));
+
         Alert.alert('Success', 'Contact information updated successfully', [
           { text: 'OK', onPress: () => router.back() }
         ]);

@@ -6,10 +6,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import { router } from 'expo-router';
 import shopService from '../../services/shopService';
 import { BusinessHour } from '../../lib/api/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function OperatingHoursScreen() {
   const insets = useSafeAreaInsets();
-  const { shop } = useAuth();
+  const { shop, setShop } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -117,7 +118,12 @@ export default function OperatingHoursScreen() {
         businessHours,
       });
 
-      if (response.status === 'success') {
+      if (response.status === 'success' && response.data) {
+        // Update shop in context and storage
+        const updatedShop = { ...shop, ...response.data.shop };
+        setShop(updatedShop);
+        await AsyncStorage.setItem('shopData', JSON.stringify(updatedShop));
+
         Alert.alert('Success', 'Operating hours updated successfully', [
           { text: 'OK', onPress: () => router.back() }
         ]);

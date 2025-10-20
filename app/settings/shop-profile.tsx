@@ -5,17 +5,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { router } from 'expo-router';
 import shopService from '../../services/shopService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ShopProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { shop } = useAuth();
+  const { shop, setShop } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Form state
   const [businessName, setBusinessName] = useState('');
   const [description, setDescription] = useState('');
-  const [businessType, setBusinessType] = useState<string>('');
+  const [businessType, setBusinessType] = useState<string>('shop');
 
   const businessTypes = [
     { value: 'restaurant', label: 'Restaurant', icon: 'restaurant-outline' },
@@ -56,7 +57,12 @@ export default function ShopProfileScreen() {
         businessType: businessType as any,
       });
 
-      if (response.status === 'success') {
+      if (response.status === 'success' && response.data) {
+        // Update shop in context and storage
+        const updatedShop = { ...shop, ...response.data.shop };
+        setShop(updatedShop);
+        await AsyncStorage.setItem('shopData', JSON.stringify(updatedShop));
+
         Alert.alert('Success', 'Shop profile updated successfully', [
           { text: 'OK', onPress: () => router.back() }
         ]);

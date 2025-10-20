@@ -65,10 +65,10 @@ export default function SettingsScreen({ onBack }) {
     {
       title: 'Account & Shop',
       items: [
-        { icon: 'storefront-outline', title: 'Shop Profile', subtitle: 'Edit shop details and information', action: 'navigate', route: '/(settings)/shop-profile' },
-        { icon: 'business-outline', title: 'Business Information', subtitle: 'Tax details, licenses, documents', action: 'navigate', route: '/(settings)/contact-info' },
+        { icon: 'storefront-outline', title: 'Shop Profile', subtitle: 'Edit shop details and information', action: 'navigate', route: '/settings/shop-profile' },
+        { icon: 'business-outline', title: 'Business Information', subtitle: 'Tax details, licenses, documents', action: 'navigate', route: '/settings/contact-info' },
         { icon: 'card-outline', title: 'Payment Settings', subtitle: 'Bank account, payment methods', action: 'navigate', route: '' },
-        { icon: 'time-outline', title: 'Operating Hours', subtitle: 'Set your shop timing', action: 'navigate', route: '/(settings)/operating-hours' },
+        { icon: 'time-outline', title: 'Operating Hours', subtitle: 'Set your shop timing', action: 'navigate', route: '/settings/operating-hours' },
       ]
     },
     {
@@ -210,7 +210,7 @@ export default function SettingsScreen({ onBack }) {
             </View>
             <TouchableOpacity
               className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center"
-              onPress={() => handleNavigate('/(settings)/shop-profile')}
+              onPress={() => handleNavigate('/settings/shop-profile')}
               activeOpacity={0.7}
             >
               <Ionicons name="create-outline" size={16} color="#6b7280" />

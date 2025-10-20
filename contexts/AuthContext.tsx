@@ -13,6 +13,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   user: User | null;
   shop: Shop | null;
+  setShop: (shop: Shop) => void;
   phoneNumber: string | null;
   setPhoneNumber: (phone: string) => void;
   pendingAuthData: { user: User; shop: Shop; token: string } | null;
@@ -190,6 +191,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         user,
         shop,
+        setShop,
         phoneNumber,
         setPhoneNumber,
         pendingAuthData,
