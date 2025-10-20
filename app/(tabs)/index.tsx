@@ -452,6 +452,82 @@ export default function DashboardScreen({ onNavigateToSettings }) {
           </View>
         </View>
 
+        {/* Business Statistics */}
+        <View className="px-5 mb-6">
+          <Text className="text-gray-900 text-lg font-semibold mb-4">Business Statistics</Text>
+          <View className="flex-row justify-between mb-3">
+            {/* Today's Revenue */}
+            <View className="bg-white rounded-2xl p-4 shadow-sm" style={{ width: '48%' }}>
+              <View className="w-10 h-10 bg-green-100 rounded-xl items-center justify-center mb-3">
+                <Ionicons name="cash-outline" size={20} color="#22c55e" />
+              </View>
+              {isLoadingStats ? (
+                <ActivityIndicator size="small" color="#f97316" />
+              ) : (
+                <>
+                  <Text className="text-gray-500 text-sm mb-1">Today's Revenue</Text>
+                  <Text className="text-gray-900 text-xl font-bold">
+                    {dashboardStats?.todayRevenue ? formatCurrency(dashboardStats.todayRevenue) : '₹ 0.00'}
+                  </Text>
+                </>
+              )}
+            </View>
+
+            {/* Total Orders */}
+            <View className="bg-white rounded-2xl p-4 shadow-sm" style={{ width: '48%' }}>
+              <View className="w-10 h-10 bg-blue-100 rounded-xl items-center justify-center mb-3">
+                <Ionicons name="receipt-outline" size={20} color="#3b82f6" />
+              </View>
+              {isLoadingStats ? (
+                <ActivityIndicator size="small" color="#f97316" />
+              ) : (
+                <>
+                  <Text className="text-gray-500 text-sm mb-1">Total Orders</Text>
+                  <Text className="text-gray-900 text-xl font-bold">
+                    {dashboardStats?.totalOrders ?? 0}
+                  </Text>
+                </>
+              )}
+            </View>
+          </View>
+
+          <View className="flex-row justify-between">
+            {/* Pending Orders */}
+            <View className="bg-white rounded-2xl p-4 shadow-sm" style={{ width: '48%' }}>
+              <View className="w-10 h-10 bg-orange-100 rounded-xl items-center justify-center mb-3">
+                <Ionicons name="hourglass-outline" size={20} color="#f97316" />
+              </View>
+              {isLoadingStats ? (
+                <ActivityIndicator size="small" color="#f97316" />
+              ) : (
+                <>
+                  <Text className="text-gray-500 text-sm mb-1">Pending Orders</Text>
+                  <Text className="text-gray-900 text-xl font-bold">
+                    {dashboardStats?.pendingOrders ?? 0}
+                  </Text>
+                </>
+              )}
+            </View>
+
+            {/* Completed Orders */}
+            <View className="bg-white rounded-2xl p-4 shadow-sm" style={{ width: '48%' }}>
+              <View className="w-10 h-10 bg-purple-100 rounded-xl items-center justify-center mb-3">
+                <Ionicons name="checkmark-done-outline" size={20} color="#a855f7" />
+              </View>
+              {isLoadingStats ? (
+                <ActivityIndicator size="small" color="#f97316" />
+              ) : (
+                <>
+                  <Text className="text-gray-500 text-sm mb-1">Completed</Text>
+                  <Text className="text-gray-900 text-xl font-bold">
+                    {dashboardStats?.completedOrders ?? 0}
+                  </Text>
+                </>
+              )}
+            </View>
+          </View>
+        </View>
+
         {/* Search Bar */}
         <View className="px-5 mb-6">
           <View className="bg-white rounded-2xl px-4 py-2 flex-row items-center shadow-sm">
