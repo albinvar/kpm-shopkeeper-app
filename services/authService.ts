@@ -36,13 +36,25 @@ class AuthService {
   async verifyOtp(phone: string, otp: string): Promise<ApiResponse<VerifyOtpResponse>> {
     try {
       const payload: VerifyOtpRequest = { phone, otp };
+      console.log('🔐 Verifying OTP for:', phone);
+
       const response = await apiClient.post<ApiResponse<VerifyOtpResponse>>(
         '/api/auth/verify-otp',
         payload
       );
+
+      console.log('✅ API Response Status:', response.data.status);
+      console.log('📦 Full Response:', JSON.stringify(response.data, null, 2));
+
+      if (response.data.data) {
+        console.log('👤 User Data:', JSON.stringify(response.data.data.user, null, 2));
+        console.log('🏪 Shop Data:', JSON.stringify(response.data.data.shop, null, 2));
+        console.log('🔑 Token:', response.data.data.token ? '✓ Present' : '✗ Missing');
+      }
+
       return response.data;
     } catch (error: any) {
-      console.error('Verify OTP Error:', error.response?.data || error.message);
+      console.error('❌ Verify OTP Error:', error.response?.data || error.message);
       throw this.handleError(error);
     }
   }
