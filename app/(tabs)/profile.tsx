@@ -208,7 +208,11 @@ export default function SettingsScreen({ onBack }) {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center">
+            <TouchableOpacity
+              className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center"
+              onPress={() => handleNavigate('/(settings)/shop-profile')}
+              activeOpacity={0.7}
+            >
               <Ionicons name="create-outline" size={16} color="#6b7280" />
             </TouchableOpacity>
           </View>
