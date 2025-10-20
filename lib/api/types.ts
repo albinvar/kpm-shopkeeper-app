@@ -22,6 +22,7 @@ export interface Shop {
   id: string;
   businessName: string; // Changed from 'name' to match API
   description?: string;
+  businessType?: 'restaurant' | 'shop' | 'firm' | 'grocery' | 'pharmacy' | 'electronics' | 'clothing' | 'other';
   address: {
     coordinates: {
       latitude: number;
@@ -36,7 +37,28 @@ export interface Shop {
   contactInfo?: {
     phone?: string;
     email?: string;
+    website?: string;
+    whatsapp?: string;
   };
+  settings?: {
+    isOpen?: boolean;
+    acceptsOrders?: boolean;
+    minimumOrderAmount?: number;
+    deliveryFee?: number;
+    freeDeliveryAbove?: number;
+    serviceRadius?: number;
+    preparationTime?: number;
+    paymentMethods?: ('cash' | 'card' | 'upi' | 'wallet' | 'bank_transfer')[];
+  };
+  documents?: {
+    bankDetails?: {
+      accountHolderName: string;
+      accountNumber: string;
+      ifscCode: string;
+      bankName: string;
+    };
+  };
+  businessHours?: BusinessHour[];
   isOpen: boolean;
   rating?: number;
   ownerId?: string;
@@ -283,4 +305,13 @@ export interface UpdateBankDetailsRequest {
   accountNumber: string;
   ifscCode: string;
   bankName: string;
+}
+
+export interface UpdateBankDetailsResponse {
+  bankDetails: {
+    accountHolderName: string;
+    accountNumber: string;
+    ifscCode: string;
+    bankName: string;
+  };
 }

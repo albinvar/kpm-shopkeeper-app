@@ -11,10 +11,11 @@ import SettingsScreen from '../app/(tabs)/profile';
 import ShopProfileScreen from '../app/shop-profile';
 import ContactInfoScreen from '../app/contact-info';
 import OperatingHoursScreen from '../app/operating-hours';
+import PaymentSettingsScreen from '../app/payment-settings';
 
 const { width } = Dimensions.get('window');
 
-type ScreenType = 'settings' | 'shop-profile' | 'contact-info' | 'operating-hours' | null;
+type ScreenType = 'settings' | 'shop-profile' | 'contact-info' | 'operating-hours' | 'payment-settings' | null;
 
 export default function AppNavigator() {
   const [navigationStack, setNavigationStack] = useState<ScreenType[]>([]);
@@ -87,6 +88,8 @@ export default function AppNavigator() {
         return <ContactInfoScreen onClose={navigateBack} />;
       case 'operating-hours':
         return <OperatingHoursScreen onClose={navigateBack} />;
+      case 'payment-settings':
+        return <PaymentSettingsScreen onClose={navigateBack} />;
       default:
         return null;
     }

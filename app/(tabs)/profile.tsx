@@ -67,7 +67,7 @@ export default function SettingsScreen({ onBack, onNavigate }) {
       items: [
         { icon: 'storefront-outline', title: 'Shop Profile', subtitle: 'Edit shop details and information', action: 'navigate', screen: 'shop-profile' },
         { icon: 'business-outline', title: 'Business Information', subtitle: 'Tax details, licenses, documents', action: 'navigate', screen: 'contact-info' },
-        { icon: 'card-outline', title: 'Payment Settings', subtitle: 'Bank account, payment methods', action: 'navigate', screen: '' },
+        { icon: 'wallet-outline', title: 'Payment Settings', subtitle: 'Bank account, payment methods', action: 'navigate', screen: 'payment-settings' },
         { icon: 'time-outline', title: 'Operating Hours', subtitle: 'Set your shop timing', action: 'navigate', screen: 'operating-hours' },
       ]
     },

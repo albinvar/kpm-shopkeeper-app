@@ -11,6 +11,7 @@ import {
   UpdateBusinessHoursRequest,
   UpdateSettingsRequest,
   UpdateBankDetailsRequest,
+  UpdateBankDetailsResponse,
   Shop,
 } from '../lib/api/types';
 
@@ -199,9 +200,9 @@ class ShopService {
   async updateBankDetails(
     shopId: string,
     data: UpdateBankDetailsRequest
-  ): Promise<ApiResponse<{ bankDetails: any }>> {
+  ): Promise<ApiResponse<UpdateBankDetailsResponse>> {
     try {
-      const response = await apiClient.put<ApiResponse<{ bankDetails: any }>>(
+      const response = await apiClient.put<ApiResponse<UpdateBankDetailsResponse>>(
         `/api/shops/${shopId}/bank-details`,
         data
       );
