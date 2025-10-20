@@ -25,16 +25,35 @@ export default function RootNavigator() {
   const [loading, setLoading] = useState(true);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [showSplashAfterLogin, setShowSplashAfterLogin] = useState(false);
+  const [showInitialSplash, setShowInitialSplash] = useState(true); // Show splash on app start
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const wasAuthenticatedRef = useRef(isAuthenticated);
 
+  console.log('RootNavigator states:', {
+    showInitialSplash,
+    loading,
+    authLoading,
+    isAuthenticated,
+    hasSeenOnboarding
+  });
+
   // Enable global back confirmation when user is authenticated and using main app
   useGlobalBackConfirmation({
-    enabled: isAuthenticated && hasSeenOnboarding && !loading,
+    enabled: isAuthenticated && hasSeenOnboarding && !loading && !showInitialSplash,
   });
 
   useEffect(() => {
+    console.log('RootNavigator mounted, starting splash timer');
+    // Start checking onboarding status immediately
     checkOnboardingStatus();
+
+    // Show splash for minimum 2 seconds, even if everything loads faster
+    const splashTimer = setTimeout(() => {
+      console.log('Splash timer finished, hiding initial splash');
+      setShowInitialSplash(false);
+    }, 2000);
+
+    return () => clearTimeout(splashTimer);
   }, []);
 
   // Detect when user just logged in (auth changed from false to true)
@@ -64,6 +83,12 @@ export default function RootNavigator() {
     }
   };
 
+  // Always show initial splash screen first, no matter what
+  if (showInitialSplash) {
+    return <InitialSplash />;
+  }
+
+  // After splash, show loading if still loading
   if (loading || authLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -86,6 +111,135 @@ export default function RootNavigator() {
   }
 
   return <AppNavigator />;
+}
+
+// Initial splash screen shown when app starts
+function InitialSplash() {
+  const logoScale = useSharedValue(0);
+  const logoOpacity = useSharedValue(0);
+  const textOpacity = useSharedValue(0);
+  const dotScale1 = useSharedValue(0);
+  const dotScale2 = useSharedValue(0);
+  const dotScale3 = useSharedValue(0);
+
+  const logoSize = Math.min(width, height) * 0.5;
+
+  console.log('InitialSplash component rendering');
+
+  useEffect(() => {
+    console.log('InitialSplash animations starting');
+    // Simple entrance animations
+    logoOpacity.value = withTiming(1, { duration: 500 });
+    logoScale.value = withSpring(1, { damping: 12, stiffness: 100 });
+
+    // Loading dots animation
+    dotScale1.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 300 }),
+        withTiming(0.5, { duration: 300 })
+      ),
+      -1,
+      true
+    );
+
+    dotScale2.value = withDelay(
+      200,
+      withRepeat(
+        withSequence(
+          withTiming(1, { duration: 300 }),
+          withTiming(0.5, { duration: 300 })
+        ),
+        -1,
+        true
+      )
+    );
+
+    dotScale3.value = withDelay(
+      400,
+      withRepeat(
+        withSequence(
+          withTiming(1, { duration: 300 }),
+          withTiming(0.5, { duration: 300 })
+        ),
+        -1,
+        true
+      )
+    );
+
+    textOpacity.value = withDelay(300, withTiming(1, { duration: 500 }));
+  }, []);
+
+  const logoAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: logoScale.value }],
+    opacity: logoOpacity.value,
+  }));
+
+  const dotAnimatedStyle = (scale: any) =>
+    useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }],
+      opacity: scale.value,
+    }));
+
+  const textAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: textOpacity.value,
+    transform: [{ translateY: interpolate(textOpacity.value, [0, 1], [20, 0]) }],
+  }));
+
+  return (
+    <View className="flex-1 items-center justify-center bg-white relative overflow-hidden">
+      <View className="absolute inset-0 bg-gradient-to-br from-orange-50 via-white to-orange-50 opacity-50" />
+
+      <Animated.View
+        style={[
+          logoAnimatedStyle,
+          {
+            zIndex: 20,
+            shadowColor: "#f97316",
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.2,
+            shadowRadius: 20,
+            elevation: 10,
+          }
+        ]}
+      >
+        <Image
+          source={require("../assets/images/logo.png")}
+          style={{ width: logoSize, height: logoSize }}
+          resizeMode="contain"
+        />
+      </Animated.View>
+
+      <Animated.View style={[textAnimatedStyle, { position: "absolute", bottom: height * 0.15 }]}>
+        <Text className="text-orange-600 text-2xl font-bold tracking-wider text-center">
+          KPM Partner
+        </Text>
+        <Text className="text-orange-400 text-sm font-medium tracking-widest text-center mt-1">
+          FOR BUSINESS
+        </Text>
+      </Animated.View>
+
+      <View className="absolute bottom-20 flex-row space-x-2">
+        <Animated.View
+          style={[
+            dotAnimatedStyle(dotScale1),
+            { width: 8, height: 8, borderRadius: 4, backgroundColor: "#f97316" },
+          ]}
+        />
+        <Animated.View
+          style={[
+            dotAnimatedStyle(dotScale2),
+            { width: 8, height: 8, borderRadius: 4, backgroundColor: "#fb923c", marginLeft: 8 },
+          ]}
+        />
+        <Animated.View
+          style={[
+            dotAnimatedStyle(dotScale3),
+            { width: 8, height: 8, borderRadius: 4, backgroundColor: "#fdba74", marginLeft: 8 },
+          ]}
+        />
+      </View>
+    </View>
+  );
 }
 
 // Splash screen component shown after successful login
