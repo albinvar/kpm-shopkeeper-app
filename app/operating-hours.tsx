@@ -8,13 +8,23 @@ import shopService from '../services/shopService';
 import { BusinessHour } from '../lib/api/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function OperatingHoursScreen() {
+export default function OperatingHoursScreen({ onClose }: { onClose?: () => void }) {
   const insets = useSafeAreaInsets();
   const { shop, setShop } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [timeType, setTimeType] = useState<'open' | 'close'>('open');
+
+  const handleBack = () => {
+    console.log('Operating Hours handleBack called, onClose:', !!onClose);
+    if (onClose) {
+      onClose();
+    } else {
+      router.back();
+    }
+  };
 
   const daysOfWeek = [
     { key: 'monday', label: 'Monday', icon: 'calendar-outline' },
@@ -46,9 +56,20 @@ export default function OperatingHoursScreen() {
   ]);
 
   useEffect(() => {
-    if (shop?.businessHours && shop.businessHours.length > 0) {
-      setBusinessHours(shop.businessHours as BusinessHour[]);
-    }
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        if (shop?.businessHours && shop.businessHours.length > 0) {
+          setBusinessHours(shop.businessHours as BusinessHour[]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
   }, [shop]);
 
   const toggleDay = (day: string) => {
@@ -119,7 +140,7 @@ export default function OperatingHoursScreen() {
         await AsyncStorage.setItem('shopData', JSON.stringify(updatedShop));
 
         Alert.alert('Success', 'Operating hours updated successfully', [
-          { text: 'OK', onPress: () => router.back() }
+          { text: 'OK', onPress: handleBack }
         ]);
       }
     } catch (error: any) {
@@ -143,21 +164,21 @@ export default function OperatingHoursScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" translucent={false} />
 
       <View
-        className="bg-white px-5 pb-4 border-b border-gray-100"
+        className="bg-white px-5 pb-4"
         style={{ paddingTop: insets.top + 16 }}
       >
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center flex-1">
             <TouchableOpacity
               className="w-10 h-10 items-center justify-center mr-3"
-              onPress={() => router.back()}
+              onPress={handleBack}
               activeOpacity={0.7}
             >
               <Ionicons name="arrow-back" size={24} color="#374151" />
             </TouchableOpacity>
             <View className="flex-1">
-              <Text className="text-gray-900 text-2xl font-bold">Operating Hours</Text>
-              <Text className="text-gray-500 text-sm mt-1">Set your shop timing</Text>
+              <Text className="text-gray-900 text-xl font-bold">Operating Hours</Text>
+              <Text className="text-gray-500 text-sm mt-1">Configure shop timing</Text>
             </View>
           </View>
           <View className="w-12 h-12 bg-orange-100 rounded-full items-center justify-center">
@@ -166,11 +187,17 @@ export default function OperatingHoursScreen() {
         </View>
       </View>
 
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 20 }}
-      >
+      {isLoading ? (
+        <View className="flex-1 items-center justify-center" style={{ paddingTop: 100 }}>
+          <ActivityIndicator size="large" color="#f97316" />
+          <Text className="text-gray-500 mt-4">Loading operating hours...</Text>
+        </View>
+      ) : (
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ padding: 20 }}
+        >
         {daysOfWeek.map((day) => {
           const dayHours = businessHours.find(h => h.day === day.key);
           if (!dayHours) return null;
@@ -197,27 +224,33 @@ export default function OperatingHoursScreen() {
                 <>
                   <View className="flex-row items-center mb-3" style={{ gap: 12 }}>
                     <TouchableOpacity
-                      className="flex-1 bg-gray-50 rounded-xl p-3 border border-gray-200"
+                      className="flex-1 bg-gray-50 rounded-xl p-3"
                       activeOpacity={0.7}
                       onPress={() => openTimePicker(day.key, 'open')}
                     >
                       <Text className="text-gray-500 text-xs mb-1">Opens</Text>
-                      <Text className="text-gray-900 font-semibold text-base">
-                        {formatTime(dayHours.openTime || '09:00')}
-                      </Text>
+                      <View className="flex-row items-center">
+                        <Ionicons name="time-outline" size={16} color="#f97316" />
+                        <Text className="text-gray-900 font-semibold text-base ml-1">
+                          {formatTime(dayHours.openTime || '09:00')}
+                        </Text>
+                      </View>
                     </TouchableOpacity>
 
-                    <Ionicons name="arrow-forward" size={20} color="#9ca3af" />
+                    <Ionicons name="arrow-forward" size={20} color="#f97316" />
 
                     <TouchableOpacity
-                      className="flex-1 bg-gray-50 rounded-xl p-3 border border-gray-200"
+                      className="flex-1 bg-gray-50 rounded-xl p-3"
                       activeOpacity={0.7}
                       onPress={() => openTimePicker(day.key, 'close')}
                     >
                       <Text className="text-gray-500 text-xs mb-1">Closes</Text>
-                      <Text className="text-gray-900 font-semibold text-base">
-                        {formatTime(dayHours.closeTime || '21:00')}
-                      </Text>
+                      <View className="flex-row items-center">
+                        <Ionicons name="time-outline" size={16} color="#f97316" />
+                        <Text className="text-gray-900 font-semibold text-base ml-1">
+                          {formatTime(dayHours.closeTime || '21:00')}
+                        </Text>
+                      </View>
                     </TouchableOpacity>
                   </View>
 
@@ -241,34 +274,51 @@ export default function OperatingHoursScreen() {
           );
         })}
 
-        <View className="bg-blue-50 rounded-xl p-4 mt-3 flex-row">
-          <Ionicons name="information-circle" size={20} color="#3b82f6" />
-          <View className="flex-1 ml-3">
-            <Text className="text-blue-900 font-medium text-sm mb-1">Customer Visibility</Text>
-            <Text className="text-blue-700 text-xs">
-              Your operating hours will be displayed to customers. They can only place orders during these times.
-            </Text>
+          <View className="bg-orange-50 rounded-2xl p-4 mt-3 flex-row">
+            <View className="w-10 h-10 bg-orange-100 rounded-full items-center justify-center mr-3">
+              <Ionicons name="information-circle" size={20} color="#f97316" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-gray-900 font-semibold text-sm mb-1">Customer Visibility</Text>
+              <Text className="text-gray-600 text-xs">
+                Your operating hours will be displayed to customers. They can only place orders during these times.
+              </Text>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      )}
 
-      <View className="bg-white px-5 py-4 border-t border-gray-100">
-        <TouchableOpacity
-          className="bg-orange-500 py-4 rounded-xl flex-row items-center justify-center"
-          activeOpacity={0.8}
-          onPress={handleSave}
-          disabled={isSaving}
-        >
-          {isSaving ? (
-            <ActivityIndicator size="small" color="#ffffff" />
-          ) : (
-            <>
-              <Ionicons name="checkmark-circle-outline" size={20} color="#ffffff" />
-              <Text className="text-white font-semibold text-base ml-2">Save Changes</Text>
-            </>
-          )}
-        </TouchableOpacity>
-      </View>
+      {!isLoading && (
+        <View className="bg-white px-5 py-4 border-t border-gray-100">
+          <TouchableOpacity
+            className={`py-4 rounded-xl flex-row items-center justify-center ${
+              isSaving ? 'bg-orange-400' : 'bg-orange-500'
+            }`}
+            activeOpacity={0.8}
+            onPress={handleSave}
+            disabled={isSaving}
+            style={{
+              shadowColor: "#f97316",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 5,
+            }}
+          >
+            {isSaving ? (
+              <>
+                <ActivityIndicator size="small" color="#ffffff" />
+                <Text className="text-white font-semibold text-base ml-2">Saving...</Text>
+              </>
+            ) : (
+              <>
+                <Ionicons name="save-outline" size={20} color="#ffffff" />
+                <Text className="text-white font-semibold text-base ml-2">Save Changes</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
 
       <Modal
         visible={showTimePicker}
