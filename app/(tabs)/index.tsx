@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, StatusBar, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, StatusBar, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withTiming, 
-  withRepeat, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withRepeat,
   withSequence,
-  interpolate 
+  interpolate
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
+import shopService from '../../services/shopService';
+import { DashboardStats } from '../../lib/api/types';
+import ErrorModal from '../../components/ErrorModal';
 
 export default function DashboardScreen({ onNavigateToSettings }) {
   const insets = useSafeAreaInsets();
@@ -20,6 +23,40 @@ export default function DashboardScreen({ onNavigateToSettings }) {
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
+
+  // Dashboard stats state
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
+  // Fetch dashboard stats
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      if (!shop?.id) {
+        setIsLoadingStats(false);
+        return;
+      }
+
+      try {
+        setIsLoadingStats(true);
+        setStatsError(null);
+        const response = await shopService.getDashboard(shop.id);
+
+        if (response.status === 'success' && response.data) {
+          setDashboardStats(response.data.stats);
+        } else {
+          setStatsError('Failed to load dashboard statistics');
+        }
+      } catch (error: any) {
+        console.error('Dashboard stats error:', error);
+        setStatsError(error.message || 'Failed to load dashboard statistics');
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, [shop?.id]);
 
   const quickActions = [
     { title: 'Store', icon: 'storefront-outline', color: '#f97316' },
@@ -156,6 +193,16 @@ export default function DashboardScreen({ onNavigateToSettings }) {
   const handleOrderPress = (order) => {
     setSelectedOrder(order);
     setShowOrderDetails(true);
+  };
+
+  // Format currency in Indian format
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
   };
 
   const getStatusConfig = (status) => {
@@ -386,8 +433,19 @@ export default function DashboardScreen({ onNavigateToSettings }) {
                 <Text className="text-white text-sm font-medium ml-1">Statistic</Text>
               </TouchableOpacity>
             </View>
-            <Text className="text-white text-3xl font-bold">₹ 17,269.12</Text>
-            
+
+            {isLoadingStats ? (
+              <View className="py-2">
+                <ActivityIndicator size="large" color="#ffffff" />
+              </View>
+            ) : statsError ? (
+              <Text className="text-white text-xl font-bold">Unable to load</Text>
+            ) : (
+              <Text className="text-white text-3xl font-bold">
+                {dashboardStats?.totalRevenue ? formatCurrency(dashboardStats.totalRevenue) : '₹ 0.00'}
+              </Text>
+            )}
+
             {/* Decorative circles */}
             <View className="absolute -right-8 -top-8 w-20 h-20 bg-white/10 rounded-full" />
             <View className="absolute -right-4 top-12 w-12 h-12 bg-white/15 rounded-full" />
@@ -755,6 +813,13 @@ export default function DashboardScreen({ onNavigateToSettings }) {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* Error Modal */}
+      <ErrorModal
+        visible={!!statsError}
+        message={statsError || ''}
+        onClose={() => setStatsError(null)}
+      />
     </View>
   );
 }
