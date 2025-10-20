@@ -157,9 +157,22 @@ export default function SettingsScreen({ onBack }) {
               <Text className="text-gray-900 font-bold text-lg">
                 {shop?.name || 'My Shop'}
               </Text>
-              <Text className="text-gray-500 text-sm">
-                {user?.phone || 'Phone not set'}
-              </Text>
+              {shop?.phone && (
+                <View className="flex-row items-center mt-1">
+                  <Ionicons name="call-outline" size={12} color="#6b7280" />
+                  <Text className="text-gray-500 text-sm ml-1">
+                    {shop.phone}
+                  </Text>
+                </View>
+              )}
+              {shop?.address && (
+                <View className="flex-row items-center mt-1">
+                  <Ionicons name="location-outline" size={12} color="#6b7280" />
+                  <Text className="text-gray-500 text-sm ml-1" numberOfLines={1}>
+                    {shop.address}
+                  </Text>
+                </View>
+              )}
               <View className="flex-row items-center mt-1">
                 <View className={`w-2 h-2 rounded-full mr-2 ${shop?.isOpen ? 'bg-green-500' : 'bg-red-500'}`} />
                 <Text className={`text-xs font-medium ${shop?.isOpen ? 'text-green-600' : 'text-red-600'}`}>
