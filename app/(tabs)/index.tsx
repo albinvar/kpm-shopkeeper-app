@@ -14,7 +14,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 export default function DashboardScreen({ onNavigateToSettings }) {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { user, shop } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -347,7 +347,7 @@ export default function DashboardScreen({ onNavigateToSettings }) {
           <View className="flex-1">
             <View className="flex-row items-center mb-1">
               <Text className="text-gray-900 text-lg font-semibold mr-2">
-                {user?.shopName || 'Madhav Stores'}
+                {shop?.name || 'My Shop'}
               </Text>
               <View className="bg-orange-100 px-2 py-1 rounded-full flex-row items-center">
                 <Ionicons name="diamond" size={10} color="#ea580c" />
@@ -356,7 +356,9 @@ export default function DashboardScreen({ onNavigateToSettings }) {
             </View>
             <View className="flex-row items-center">
               <Ionicons name="location-outline" size={14} color="#9ca3af" />
-              <Text className="text-gray-500 text-sm ml-1">Kottayam, Kerala</Text>
+              <Text className="text-gray-500 text-sm ml-1">
+                {shop?.address || 'Location not set'}
+              </Text>
             </View>
           </View>
           <TouchableOpacity 

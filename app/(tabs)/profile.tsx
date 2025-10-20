@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function SettingsScreen({ onBack }) {
-  const { logout, user } = useAuth();
+  const { logout, user, shop } = useAuth();
   const insets = useSafeAreaInsets();
   const [notifications, setNotifications] = useState(true);
   const [orderAlerts, setOrderAlerts] = useState(true);
@@ -155,14 +155,16 @@ export default function SettingsScreen({ onBack }) {
             </View>
             <View className="flex-1">
               <Text className="text-gray-900 font-bold text-lg">
-                {user?.shopName || 'Madhav Stores'}
+                {shop?.name || 'My Shop'}
               </Text>
               <Text className="text-gray-500 text-sm">
-                {user?.phone || '+91 98765 43210'}
+                {user?.phone || 'Phone not set'}
               </Text>
               <View className="flex-row items-center mt-1">
-                <View className="w-2 h-2 bg-green-500 rounded-full mr-2" />
-                <Text className="text-green-600 text-xs font-medium">Active</Text>
+                <View className={`w-2 h-2 rounded-full mr-2 ${shop?.isOpen ? 'bg-green-500' : 'bg-red-500'}`} />
+                <Text className={`text-xs font-medium ${shop?.isOpen ? 'text-green-600' : 'text-red-600'}`}>
+                  {shop?.isOpen ? 'Open' : 'Closed'}
+                </Text>
               </View>
             </View>
             <TouchableOpacity className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center">
