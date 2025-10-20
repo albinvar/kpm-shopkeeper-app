@@ -3,7 +3,8 @@ import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, StatusBar, Act
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigation, router } from 'expo-router';
+import { useNavigation } from 'expo-router';
+import ShopProfileModal from '../../components/ShopProfileModal';
 
 export default function SettingsScreen({ onBack }) {
   const { logout, user, shop } = useAuth();
@@ -14,6 +15,11 @@ export default function SettingsScreen({ onBack }) {
   const [autoAccept, setAutoAccept] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Modal visibility states
+  const [showShopProfileModal, setShowShopProfileModal] = useState(false);
+  const [showContactInfoModal, setShowContactInfoModal] = useState(false);
+  const [showOperatingHoursModal, setShowOperatingHoursModal] = useState(false);
 
   // Handle back button - navigate to home tab instead of exit
   useEffect(() => {
@@ -55,9 +61,19 @@ export default function SettingsScreen({ onBack }) {
     );
   };
 
-  const handleNavigate = (route: string) => {
-    if (route) {
-      router.push(route as any);
+  const handleNavigate = (modalType: string) => {
+    switch (modalType) {
+      case 'shop-profile':
+        setShowShopProfileModal(true);
+        break;
+      case 'contact-info':
+        setShowContactInfoModal(true);
+        break;
+      case 'operating-hours':
+        setShowOperatingHoursModal(true);
+        break;
+      default:
+        break;
     }
   };
 
@@ -65,10 +81,10 @@ export default function SettingsScreen({ onBack }) {
     {
       title: 'Account & Shop',
       items: [
-        { icon: 'storefront-outline', title: 'Shop Profile', subtitle: 'Edit shop details and information', action: 'navigate', route: '/shop-profile' },
-        { icon: 'business-outline', title: 'Business Information', subtitle: 'Tax details, licenses, documents', action: 'navigate', route: '/contact-info' },
-        { icon: 'card-outline', title: 'Payment Settings', subtitle: 'Bank account, payment methods', action: 'navigate', route: '' },
-        { icon: 'time-outline', title: 'Operating Hours', subtitle: 'Set your shop timing', action: 'navigate', route: '/operating-hours' },
+        { icon: 'storefront-outline', title: 'Shop Profile', subtitle: 'Edit shop details and information', action: 'navigate', modalType: 'shop-profile' },
+        { icon: 'business-outline', title: 'Business Information', subtitle: 'Tax details, licenses, documents', action: 'navigate', modalType: 'contact-info' },
+        { icon: 'card-outline', title: 'Payment Settings', subtitle: 'Bank account, payment methods', action: 'navigate', modalType: '' },
+        { icon: 'time-outline', title: 'Operating Hours', subtitle: 'Set your shop timing', action: 'navigate', modalType: 'operating-hours' },
       ]
     },
     {
@@ -113,8 +129,8 @@ export default function SettingsScreen({ onBack }) {
       key={item.title}
       className={`flex-row items-center py-4 ${!isLast ? 'border-b border-gray-100' : ''}`}
       activeOpacity={0.7}
-      onPress={() => item.route && handleNavigate(item.route)}
-      disabled={!item.route && item.action === 'navigate'}
+      onPress={() => item.modalType && handleNavigate(item.modalType)}
+      disabled={!item.modalType && item.action === 'navigate'}
     >
       <View className="w-10 h-10 bg-orange-100 rounded-full items-center justify-center mr-4">
         <Ionicons name={item.icon as any} size={20} color="#f97316" />
@@ -210,7 +226,7 @@ export default function SettingsScreen({ onBack }) {
             </View>
             <TouchableOpacity
               className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center"
-              onPress={() => handleNavigate('/shop-profile')}
+              onPress={() => handleNavigate('shop-profile')}
               activeOpacity={0.7}
             >
               <Ionicons name="create-outline" size={16} color="#6b7280" />
@@ -253,6 +269,12 @@ export default function SettingsScreen({ onBack }) {
           <Text className="text-gray-400 text-xs mt-1">Made with ❤️ for local businesses</Text>
         </View>
       </ScrollView>
+
+      {/* Edit Modals */}
+      <ShopProfileModal
+        visible={showShopProfileModal}
+        onClose={() => setShowShopProfileModal(false)}
+      />
     </View>
   );
 }
