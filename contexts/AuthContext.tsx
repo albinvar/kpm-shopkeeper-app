@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import authService from '../services/authService';
+import userService from '../services/userService';
 import { User, Shop } from '../lib/api/types';
 
 interface AuthContextType {
@@ -129,18 +130,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('No pending authentication data');
       }
 
-      // Debug: Log the shop data structure
-      console.log('🏪 Shop Data Being Saved:', JSON.stringify(pendingAuthData.shop, null, 2));
+      // Debug: Log the initial minimal shop data
+      console.log('🏪 Minimal Shop Data from Auth:', JSON.stringify(pendingAuthData.shop, null, 2));
 
-      // Save token and user data to storage
+      // Save token first so subsequent API calls are authenticated
       await AsyncStorage.setItem('authToken', pendingAuthData.token);
-      await AsyncStorage.setItem('userData', JSON.stringify(pendingAuthData.user));
-      await AsyncStorage.setItem('shopData', JSON.stringify(pendingAuthData.shop));
 
-      // Update auth state
+      // Fetch full user and shop details from /api/auth/me
+      console.log('📡 Fetching full shop details...');
+      const meResponse = await userService.getMe();
+
+      let fullShopData = pendingAuthData.shop;
+
+      if (meResponse.status === 'success' && meResponse.data?.shop) {
+        fullShopData = meResponse.data.shop;
+        console.log('✅ Full Shop Data Retrieved:', JSON.stringify(fullShopData, null, 2));
+      } else {
+        console.warn('⚠️ Could not fetch full shop details, using minimal data');
+      }
+
+      // Save user and full shop data to storage
+      await AsyncStorage.setItem('userData', JSON.stringify(pendingAuthData.user));
+      await AsyncStorage.setItem('shopData', JSON.stringify(fullShopData));
+
+      // Update auth state with full data
       setIsAuthenticated(true);
       setUser(pendingAuthData.user);
-      setShop(pendingAuthData.shop);
+      setShop(fullShopData);
       setPendingAuthData(null);
     } catch (error) {
       console.error('Complete login error:', error);

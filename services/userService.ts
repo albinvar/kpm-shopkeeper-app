@@ -24,6 +24,27 @@ class UserService {
   }
 
   /**
+   * Get current user data with shop details (for shop owners)
+   * GET /api/auth/me
+   * @returns User and shop data
+   */
+  async getMe(): Promise<ApiResponse<{ user: any; shop: any }>> {
+    try {
+      console.log('📡 Fetching user details from /api/auth/me');
+      const response = await apiClient.get<ApiResponse<{ user: any; shop: any }>>(
+        '/api/auth/me'
+      );
+
+      console.log('✅ /api/auth/me Response:', JSON.stringify(response.data, null, 2));
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Get Me Error:', error.response?.data || error.message);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
    * Update user profile
    * PUT /api/users/profile
    * @param data - Profile data to update
