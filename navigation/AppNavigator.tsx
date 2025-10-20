@@ -30,10 +30,20 @@ export default function AppNavigator() {
     console.log('AppNavigator navigateTo:', screen, 'current stack:', navigationStack);
 
     setIsTransitioning(true);
+
+    // If there's already a screen showing, we need to prepare for the new screen
+    if (currentScreen) {
+      // Instantly reset translateX to start off-screen for the new screen
+      translateX.value = width;
+    }
+
     setNavigationStack(prev => [...prev, screen]);
 
-    translateX.value = withTiming(0, { duration: 300 }, () => {
-      runOnJS(setIsTransitioning)(false);
+    // Small delay to allow React to update the screen content
+    requestAnimationFrame(() => {
+      translateX.value = withTiming(0, { duration: 300 }, () => {
+        runOnJS(setIsTransitioning)(false);
+      });
     });
   };
 
@@ -42,22 +52,18 @@ export default function AppNavigator() {
 
     console.log('AppNavigator navigateBack, current stack:', navigationStack);
 
+    const willHaveRemainingScreen = navigationStack.length > 1;
+
     setIsTransitioning(true);
 
     translateX.value = withTiming(width, { duration: 300 }, () => {
       runOnJS(setNavigationStack)((prev: ScreenType[]) => prev.slice(0, -1));
       runOnJS(setIsTransitioning)(false);
-      runOnJS(resetTranslateX)();
+      // After popping, if there's still a screen in the stack, ensure it's positioned at 0
+      if (willHaveRemainingScreen) {
+        translateX.value = 0;
+      }
     });
-  };
-
-  const resetTranslateX = () => {
-    // Reset translateX for the next screen in stack
-    if (navigationStack.length > 1) {
-      translateX.value = 0;
-    } else {
-      translateX.value = width;
-    }
   };
 
   const screenStyle = useAnimatedStyle(() => ({
