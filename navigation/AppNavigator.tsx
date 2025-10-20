@@ -19,6 +19,7 @@ type ScreenType = 'settings' | 'shop-profile' | 'contact-info' | 'operating-hour
 export default function AppNavigator() {
   const [navigationStack, setNavigationStack] = useState<ScreenType[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [animatingScreen, setAnimatingScreen] = useState<ScreenType | null>(null);
   const translateX = useSharedValue(width);
 
   // Get current screen from top of stack
@@ -30,18 +31,18 @@ export default function AppNavigator() {
     console.log('AppNavigator navigateTo:', screen, 'current stack:', navigationStack);
 
     setIsTransitioning(true);
+    setAnimatingScreen(screen);
 
-    // If there's already a screen showing, we need to prepare for the new screen
-    if (currentScreen) {
-      // Instantly reset translateX to start off-screen for the new screen
-      translateX.value = width;
-    }
+    // Reset translateX to start off-screen
+    translateX.value = width;
 
+    // Add new screen to stack
     setNavigationStack(prev => [...prev, screen]);
 
-    // Small delay to allow React to update the screen content
+    // Animate the new screen in
     requestAnimationFrame(() => {
       translateX.value = withTiming(0, { duration: 300 }, () => {
+        runOnJS(setAnimatingScreen)(null);
         runOnJS(setIsTransitioning)(false);
       });
     });
@@ -58,19 +59,17 @@ export default function AppNavigator() {
 
     console.log('AppNavigator navigateBack, current stack:', navigationStack);
 
-    const willHaveRemainingScreen = navigationStack.length > 1;
-    // Calculate new stack BEFORE animation to avoid closure issues with runOnJS
-    const newStack = navigationStack.slice(0, -1);
-
+    const screenToAnimate = navigationStack[navigationStack.length - 1];
     setIsTransitioning(true);
+    setAnimatingScreen(screenToAnimate);
 
+    // Animate out the current screen
     translateX.value = withTiming(width, { duration: 300 }, () => {
+      // Remove the screen from stack after animation
+      const newStack = navigationStack.slice(0, -1);
       runOnJS(updateNavigationStack)(newStack);
+      runOnJS(setAnimatingScreen)(null);
       runOnJS(setIsTransitioning)(false);
-      // After popping, if there's still a screen in the stack, ensure it's positioned at 0
-      if (willHaveRemainingScreen) {
-        translateX.value = 0;
-      }
     });
   };
 
@@ -78,8 +77,8 @@ export default function AppNavigator() {
     transform: [{ translateX: translateX.value }],
   }));
 
-  const renderCurrentScreen = () => {
-    switch (currentScreen) {
+  const renderScreen = (screen: ScreenType) => {
+    switch (screen) {
       case 'settings':
         return <SettingsScreen onBack={navigateBack} onNavigate={navigateTo} />;
       case 'shop-profile':
@@ -97,24 +96,32 @@ export default function AppNavigator() {
     <View style={{ flex: 1 }}>
       <DashboardScreen onNavigateToSettings={() => navigateTo('settings')} />
 
-      {currentScreen && (
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: width,
-              height: '100%',
-              backgroundColor: '#ffffff',
-              zIndex: 10,
-            },
-            screenStyle
-          ]}
-        >
-          {renderCurrentScreen()}
-        </Animated.View>
-      )}
+      {/* Render all screens in the stack, but only animate the top one */}
+      {navigationStack.map((screen, index) => {
+        const isTopScreen = index === navigationStack.length - 1;
+        const isAnimating = animatingScreen === screen;
+
+        return (
+          <Animated.View
+            key={`${screen}_${index}`}
+            style={[
+              {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: width,
+                height: '100%',
+                backgroundColor: '#ffffff',
+                zIndex: 10 + index,
+              },
+              // Only apply animation to the screen that's currently animating
+              isAnimating && isTopScreen ? screenStyle : { transform: [{ translateX: 0 }] }
+            ]}
+          >
+            {renderScreen(screen)}
+          </Animated.View>
+        );
+      })}
     </View>
   );
 }
