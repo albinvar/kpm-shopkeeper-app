@@ -47,17 +47,25 @@ export default function AppNavigator() {
     });
   };
 
+  // Helper function to update navigation stack (needed for runOnJS)
+  const updateNavigationStack = (newStack: ScreenType[]) => {
+    console.log('updateNavigationStack called with:', newStack);
+    setNavigationStack(newStack);
+  };
+
   const navigateBack = () => {
     if (isTransitioning || navigationStack.length === 0) return;
 
     console.log('AppNavigator navigateBack, current stack:', navigationStack);
 
     const willHaveRemainingScreen = navigationStack.length > 1;
+    // Calculate new stack BEFORE animation to avoid closure issues with runOnJS
+    const newStack = navigationStack.slice(0, -1);
 
     setIsTransitioning(true);
 
     translateX.value = withTiming(width, { duration: 300 }, () => {
-      runOnJS(setNavigationStack)((prev: ScreenType[]) => prev.slice(0, -1));
+      runOnJS(updateNavigationStack)(newStack);
       runOnJS(setIsTransitioning)(false);
       // After popping, if there's still a screen in the stack, ensure it's positioned at 0
       if (willHaveRemainingScreen) {
