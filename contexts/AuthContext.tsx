@@ -129,6 +129,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('No pending authentication data');
       }
 
+      // Debug: Log the shop data structure
+      console.log('🏪 Shop Data Being Saved:', JSON.stringify(pendingAuthData.shop, null, 2));
+
       // Save token and user data to storage
       await AsyncStorage.setItem('authToken', pendingAuthData.token);
       await AsyncStorage.setItem('userData', JSON.stringify(pendingAuthData.user));

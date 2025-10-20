@@ -169,7 +169,9 @@ export default function SettingsScreen({ onBack }) {
                 <View className="flex-row items-center mt-1">
                   <Ionicons name="location-outline" size={12} color="#6b7280" />
                   <Text className="text-gray-500 text-sm ml-1" numberOfLines={1}>
-                    {`${shop.address.addressLine1}, ${shop.address.city}`}
+                    {shop.address.city && shop.address.state
+                      ? `${shop.address.addressLine1 || ''}, ${shop.address.city}, ${shop.address.state}`.replace(/^,\s*/, '')
+                      : shop.address.addressLine1 || 'Address not set'}
                   </Text>
                 </View>
               )}

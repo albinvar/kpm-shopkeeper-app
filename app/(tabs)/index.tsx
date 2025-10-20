@@ -593,7 +593,11 @@ export default function DashboardScreen({ onNavigateToSettings }) {
             <View className="flex-row items-center">
               <Ionicons name="location-outline" size={14} color="#9ca3af" />
               <Text className="text-gray-500 text-sm ml-1">
-                {shop?.address ? `${shop.address.city}, ${shop.address.state}` : 'Location not set'}
+                {shop?.address?.city && shop?.address?.state
+                  ? `${shop.address.city}, ${shop.address.state}`
+                  : shop?.address?.addressLine1
+                  ? shop.address.addressLine1
+                  : 'Location not set'}
               </Text>
             </View>
           </View>
