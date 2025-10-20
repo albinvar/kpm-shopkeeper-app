@@ -3,12 +3,12 @@ import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, StatusBar, Act
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
-import { useRouter } from 'expo-router';
+import { useNavigation } from 'expo-router';
 
 export default function SettingsScreen({ onBack }) {
   const { logout, user, shop } = useAuth();
   const insets = useSafeAreaInsets();
-  const router = useRouter();
+  const navigation = useNavigation();
   const [notifications, setNotifications] = useState(true);
   const [orderAlerts, setOrderAlerts] = useState(true);
   const [autoAccept, setAutoAccept] = useState(false);
@@ -18,12 +18,16 @@ export default function SettingsScreen({ onBack }) {
   // Handle back button - navigate to home tab instead of exit
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      router.push('/(tabs)');
+      // Use the parent navigation to jump to the index tab
+      const parentNav = navigation.getParent();
+      if (parentNav) {
+        parentNav.navigate('index');
+      }
       return true; // Prevent default behavior
     });
 
     return () => backHandler.remove();
-  }, []);
+  }, [navigation]);
 
   const handleLogout = () => {
     Alert.alert(
