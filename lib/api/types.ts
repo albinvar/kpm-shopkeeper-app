@@ -226,3 +226,61 @@ export interface ApiError {
   message: string;
   errors?: any;
 }
+
+// Shop Update API Types
+export interface UpdateBasicInfoRequest {
+  businessName?: string;
+  description?: string;
+  businessType?: 'restaurant' | 'shop' | 'firm' | 'grocery' | 'pharmacy' | 'electronics' | 'clothing' | 'other';
+  categories?: string[];
+}
+
+export interface UpdateContactInfoRequest {
+  phone?: string;
+  email?: string;
+  website?: string;
+  whatsapp?: string;
+}
+
+export interface UpdateAddressRequest {
+  addressLine1?: string;
+  addressLine2?: string;
+  landmark?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export interface BusinessHour {
+  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  isOpen: boolean;
+  openTime?: string;
+  closeTime?: string;
+}
+
+export interface UpdateBusinessHoursRequest {
+  businessHours: BusinessHour[];
+}
+
+export interface UpdateSettingsRequest {
+  isOpen?: boolean;
+  acceptsOrders?: boolean;
+  minimumOrderAmount?: number;
+  deliveryFee?: number;
+  freeDeliveryAbove?: number;
+  serviceRadius?: number;
+  preparationTime?: number;
+  paymentMethods?: ('cash' | 'card' | 'upi' | 'wallet' | 'bank_transfer')[];
+}
+
+export interface UpdateBankDetailsRequest {
+  accountHolderName: string;
+  accountNumber: string;
+  ifscCode: string;
+  bankName: string;
+}

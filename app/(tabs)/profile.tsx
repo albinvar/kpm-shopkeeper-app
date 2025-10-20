@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, StatusBar, Act
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigation } from 'expo-router';
+import { useNavigation, router } from 'expo-router';
 
 export default function SettingsScreen({ onBack }) {
   const { logout, user, shop } = useAuth();
@@ -18,12 +18,14 @@ export default function SettingsScreen({ onBack }) {
   // Handle back button - navigate to home tab instead of exit
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      // Use the parent navigation to jump to the index tab
-      const parentNav = navigation.getParent();
-      if (parentNav) {
-        parentNav.navigate('index');
+      try {
+        // Navigate to home tab
+        navigation.navigate('index' as never);
+        return true; // Prevent default behavior
+      } catch (error) {
+        console.error('Navigation error:', error);
+        return false; // Allow default behavior if navigation fails
       }
-      return true; // Prevent default behavior
     });
 
     return () => backHandler.remove();
@@ -53,14 +55,20 @@ export default function SettingsScreen({ onBack }) {
     );
   };
 
+  const handleNavigate = (route: string) => {
+    if (route) {
+      router.push(route as any);
+    }
+  };
+
   const settingsSections = [
     {
       title: 'Account & Shop',
       items: [
-        { icon: 'storefront-outline', title: 'Shop Profile', subtitle: 'Edit shop details and information', action: 'navigate' },
-        { icon: 'business-outline', title: 'Business Information', subtitle: 'Tax details, licenses, documents', action: 'navigate' },
-        { icon: 'card-outline', title: 'Payment Settings', subtitle: 'Bank account, payment methods', action: 'navigate' },
-        { icon: 'time-outline', title: 'Operating Hours', subtitle: 'Set your shop timing', action: 'navigate' },
+        { icon: 'storefront-outline', title: 'Shop Profile', subtitle: 'Edit shop details and information', action: 'navigate', route: '/(settings)/shop-profile' },
+        { icon: 'business-outline', title: 'Business Information', subtitle: 'Tax details, licenses, documents', action: 'navigate', route: '/(settings)/contact-info' },
+        { icon: 'card-outline', title: 'Payment Settings', subtitle: 'Bank account, payment methods', action: 'navigate', route: '' },
+        { icon: 'time-outline', title: 'Operating Hours', subtitle: 'Set your shop timing', action: 'navigate', route: '/(settings)/operating-hours' },
       ]
     },
     {
@@ -101,10 +109,12 @@ export default function SettingsScreen({ onBack }) {
   ];
 
   const renderSettingItem = (item, isLast = false) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       key={item.title}
       className={`flex-row items-center py-4 ${!isLast ? 'border-b border-gray-100' : ''}`}
       activeOpacity={0.7}
+      onPress={() => item.route && handleNavigate(item.route)}
+      disabled={!item.route && item.action === 'navigate'}
     >
       <View className="w-10 h-10 bg-orange-100 rounded-full items-center justify-center mr-4">
         <Ionicons name={item.icon as any} size={20} color="#f97316" />

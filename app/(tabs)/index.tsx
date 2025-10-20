@@ -1153,7 +1153,7 @@ export default function DashboardScreen({ onNavigateToSettings }) {
             </Text>
 
             {/* Buttons */}
-            <View className="flex-row space-x-3">
+            <View className="flex-row" style={{ gap: 12 }}>
               <TouchableOpacity
                 className="flex-1 bg-gray-100 py-3 rounded-xl"
                 activeOpacity={0.8}
