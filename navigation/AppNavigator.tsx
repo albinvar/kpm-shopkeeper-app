@@ -17,15 +17,20 @@ const { width } = Dimensions.get('window');
 type ScreenType = 'settings' | 'shop-profile' | 'contact-info' | 'operating-hours' | null;
 
 export default function AppNavigator() {
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>(null);
+  const [navigationStack, setNavigationStack] = useState<ScreenType[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const translateX = useSharedValue(width);
 
+  // Get current screen from top of stack
+  const currentScreen = navigationStack.length > 0 ? navigationStack[navigationStack.length - 1] : null;
+
   const navigateTo = (screen: ScreenType) => {
-    if (isTransitioning || currentScreen === screen) return;
+    if (isTransitioning || currentScreen === screen || !screen) return;
+
+    console.log('AppNavigator navigateTo:', screen, 'current stack:', navigationStack);
 
     setIsTransitioning(true);
-    setCurrentScreen(screen);
+    setNavigationStack(prev => [...prev, screen]);
 
     translateX.value = withTiming(0, { duration: 300 }, () => {
       runOnJS(setIsTransitioning)(false);
@@ -33,14 +38,26 @@ export default function AppNavigator() {
   };
 
   const navigateBack = () => {
-    if (isTransitioning) return;
+    if (isTransitioning || navigationStack.length === 0) return;
+
+    console.log('AppNavigator navigateBack, current stack:', navigationStack);
 
     setIsTransitioning(true);
 
     translateX.value = withTiming(width, { duration: 300 }, () => {
-      runOnJS(setCurrentScreen)(null);
+      runOnJS(setNavigationStack)((prev: ScreenType[]) => prev.slice(0, -1));
       runOnJS(setIsTransitioning)(false);
+      runOnJS(resetTranslateX)();
     });
+  };
+
+  const resetTranslateX = () => {
+    // Reset translateX for the next screen in stack
+    if (navigationStack.length > 1) {
+      translateX.value = 0;
+    } else {
+      translateX.value = width;
+    }
   };
 
   const screenStyle = useAnimatedStyle(() => ({
