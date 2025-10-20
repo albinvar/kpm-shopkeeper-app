@@ -583,7 +583,7 @@ export default function DashboardScreen({ onNavigateToSettings }) {
           <View className="flex-1">
             <View className="flex-row items-center mb-1">
               <Text className="text-gray-900 text-lg font-semibold mr-2">
-                {shop?.name || 'My Shop'}
+                {shop?.businessName || 'My Shop'}
               </Text>
               <View className="bg-orange-100 px-2 py-1 rounded-full flex-row items-center">
                 <Ionicons name="diamond" size={10} color="#ea580c" />
@@ -593,7 +593,7 @@ export default function DashboardScreen({ onNavigateToSettings }) {
             <View className="flex-row items-center">
               <Ionicons name="location-outline" size={14} color="#9ca3af" />
               <Text className="text-gray-500 text-sm ml-1">
-                {shop?.address || 'Location not set'}
+                {shop?.address ? `${shop.address.city}, ${shop.address.state}` : 'Location not set'}
               </Text>
             </View>
           </View>

@@ -155,13 +155,13 @@ export default function SettingsScreen({ onBack }) {
             </View>
             <View className="flex-1">
               <Text className="text-gray-900 font-bold text-lg">
-                {shop?.name || 'My Shop'}
+                {shop?.businessName || 'My Shop'}
               </Text>
-              {shop?.phone && (
+              {shop?.contactInfo?.phone && (
                 <View className="flex-row items-center mt-1">
                   <Ionicons name="call-outline" size={12} color="#6b7280" />
                   <Text className="text-gray-500 text-sm ml-1">
-                    {shop.phone}
+                    {shop.contactInfo.phone}
                   </Text>
                 </View>
               )}
@@ -169,7 +169,7 @@ export default function SettingsScreen({ onBack }) {
                 <View className="flex-row items-center mt-1">
                   <Ionicons name="location-outline" size={12} color="#6b7280" />
                   <Text className="text-gray-500 text-sm ml-1" numberOfLines={1}>
-                    {shop.address}
+                    {`${shop.address.addressLine1}, ${shop.address.city}`}
                   </Text>
                 </View>
               )}

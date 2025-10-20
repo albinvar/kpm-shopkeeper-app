@@ -20,11 +20,23 @@ export interface User {
 
 export interface Shop {
   id: string;
-  name: string;
+  businessName: string; // Changed from 'name' to match API
   description?: string;
-  address: string;
-  phone: string;
-  email?: string;
+  address: {
+    coordinates: {
+      latitude: number;
+      longitude: number;
+    };
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    zipCode?: string;
+  };
+  contactInfo?: {
+    phone?: string;
+    email?: string;
+  };
   isOpen: boolean;
   rating?: number;
   ownerId?: string;
@@ -39,6 +51,10 @@ export interface Shop {
     friday?: { open: string; close: string };
     saturday?: { open: string; close: string };
     sunday?: { open: string; close: string };
+  };
+  stats?: {
+    totalOrders: number;
+    totalRevenue: number;
   };
   deliveryRadius?: number;
   deliveryFee?: number;
