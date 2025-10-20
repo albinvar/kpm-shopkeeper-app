@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, StatusBar, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, StatusBar, Modal, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useSharedValue,
@@ -34,6 +34,9 @@ export default function DashboardScreen({ onNavigateToSettings }) {
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
+
+  // Refresh state
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch dashboard stats
   useEffect(() => {
@@ -144,6 +147,58 @@ export default function DashboardScreen({ onNavigateToSettings }) {
       'cancelled': 'cancelled'
     };
     return statusMap[apiStatus] || 'pending';
+  };
+
+  // Handle pull-to-refresh
+  const onRefresh = async () => {
+    setRefreshing(true);
+
+    try {
+      // Fetch both dashboard stats and orders in parallel
+      const [statsResponse, ordersResponse] = await Promise.all([
+        shop?.id ? shopService.getDashboard(shop.id) : Promise.resolve(null),
+        shop?.id ? shopService.getShopOrders(shop.id, {
+          limit: 20,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        }) : Promise.resolve(null)
+      ]);
+
+      // Update dashboard stats
+      if (statsResponse && statsResponse.status === 'success' && statsResponse.data) {
+        setDashboardStats(statsResponse.data.stats);
+        setStatsError(null);
+      }
+
+      // Update orders
+      if (ordersResponse && ordersResponse.status === 'success' && ordersResponse.data) {
+        const mappedOrders = ordersResponse.data.orders.map(order => ({
+          id: order.orderNumber || order.id,
+          items: order.items.map(item => ({
+            name: item.productName,
+            quantity: `${item.quantity}x`,
+            price: item.price,
+            image: item.productImage || '📦'
+          })),
+          totalPrice: order.total,
+          time: getTimeAgo(order.createdAt),
+          status: mapOrderStatus(order.status),
+          customer: order.customerName || 'Customer',
+          address: order.deliveryAddress
+            ? `${order.deliveryAddress.street}, ${order.deliveryAddress.city}`
+            : 'No address',
+          rider: order.status === 'out_for_delivery' ? 'Delivery Partner' : undefined,
+          reason: order.notes,
+          rawOrder: order
+        }));
+        setOrders(mappedOrders);
+        setOrdersError(null);
+      }
+    } catch (error: any) {
+      console.error('Refresh error:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // Handle order confirmation
@@ -552,10 +607,18 @@ export default function DashboardScreen({ onNavigateToSettings }) {
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#f97316']}
+            tintColor="#f97316"
+          />
+        }
       >
         {/* Monthly Income Card */}
         <View className="px-5 mb-6">
