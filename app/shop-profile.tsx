@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StatusBar, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { router } from 'expo-router';
-import shopService from '../../services/shopService';
+import shopService from '../services/shopService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ShopProfileScreen() {
   const insets = useSafeAreaInsets();
   const { shop, setShop } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Form state

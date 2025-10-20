@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StatusBar, ActivityIndicator, Alert, Switch, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { router } from 'expo-router';
-import shopService from '../../services/shopService';
-import { BusinessHour } from '../../lib/api/types';
+import shopService from '../services/shopService';
+import { BusinessHour } from '../lib/api/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function OperatingHoursScreen() {
@@ -35,7 +35,6 @@ export default function OperatingHoursScreen() {
     '20:00', '20:30', '21:00', '21:30', '22:00', '22:30', '23:00', '23:30',
   ];
 
-  // Initialize with default hours
   const [businessHours, setBusinessHours] = useState<BusinessHour[]>([
     { day: 'monday', isOpen: true, openTime: '09:00', closeTime: '21:00' },
     { day: 'tuesday', isOpen: true, openTime: '09:00', closeTime: '21:00' },
@@ -46,7 +45,6 @@ export default function OperatingHoursScreen() {
     { day: 'sunday', isOpen: false, openTime: '09:00', closeTime: '21:00' },
   ]);
 
-  // Load shop business hours
   useEffect(() => {
     if (shop?.businessHours && shop.businessHours.length > 0) {
       setBusinessHours(shop.businessHours as BusinessHour[]);
@@ -69,7 +67,6 @@ export default function OperatingHoursScreen() {
 
   const selectTime = (time: string) => {
     if (!selectedDay) return;
-
     setBusinessHours(prev =>
       prev.map(hour =>
         hour.day === selectedDay
@@ -114,12 +111,9 @@ export default function OperatingHoursScreen() {
 
     try {
       setIsSaving(true);
-      const response = await shopService.updateBusinessHours(shop.id, {
-        businessHours,
-      });
+      const response = await shopService.updateBusinessHours(shop.id, { businessHours });
 
       if (response.status === 'success' && response.data) {
-        // Update shop in context and storage
         const updatedShop = { ...shop, ...response.data.shop };
         setShop(updatedShop);
         await AsyncStorage.setItem('shopData', JSON.stringify(updatedShop));
@@ -148,7 +142,6 @@ export default function OperatingHoursScreen() {
     <View className="flex-1 bg-gray-50">
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" translucent={false} />
 
-      {/* Header */}
       <View
         className="bg-white px-5 pb-4 border-b border-gray-100"
         style={{ paddingTop: insets.top + 16 }}
@@ -178,7 +171,7 @@ export default function OperatingHoursScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 20 }}
       >
-        {daysOfWeek.map((day, index) => {
+        {daysOfWeek.map((day) => {
           const dayHours = businessHours.find(h => h.day === day.key);
           if (!dayHours) return null;
 
@@ -234,9 +227,7 @@ export default function OperatingHoursScreen() {
                     onPress={() => applyToAllDays(day.key)}
                   >
                     <Ionicons name="copy-outline" size={16} color="#f97316" />
-                    <Text className="text-orange-600 text-xs font-medium ml-1">
-                      Apply to all days
-                    </Text>
+                    <Text className="text-orange-600 text-xs font-medium ml-1">Apply to all days</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -250,13 +241,10 @@ export default function OperatingHoursScreen() {
           );
         })}
 
-        {/* Info Note */}
         <View className="bg-blue-50 rounded-xl p-4 mt-3 flex-row">
           <Ionicons name="information-circle" size={20} color="#3b82f6" />
           <View className="flex-1 ml-3">
-            <Text className="text-blue-900 font-medium text-sm mb-1">
-              Customer Visibility
-            </Text>
+            <Text className="text-blue-900 font-medium text-sm mb-1">Customer Visibility</Text>
             <Text className="text-blue-700 text-xs">
               Your operating hours will be displayed to customers. They can only place orders during these times.
             </Text>
@@ -264,7 +252,6 @@ export default function OperatingHoursScreen() {
         </View>
       </ScrollView>
 
-      {/* Save Button */}
       <View className="bg-white px-5 py-4 border-t border-gray-100">
         <TouchableOpacity
           className="bg-orange-500 py-4 rounded-xl flex-row items-center justify-center"
@@ -283,7 +270,6 @@ export default function OperatingHoursScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Time Picker Modal */}
       <Modal
         visible={showTimePicker}
         transparent={true}
