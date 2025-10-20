@@ -46,11 +46,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData = await AsyncStorage.getItem('userData');
       const shopData = await AsyncStorage.getItem('shopData');
 
+      console.log('=== Loading Auth from Storage ===');
+      console.log('Token exists:', !!token);
+      console.log('Shop data:', shopData);
+      console.log('================================');
+
       if (token && userData) {
         setIsAuthenticated(true);
         setUser(JSON.parse(userData));
         if (shopData) {
-          setShop(JSON.parse(shopData));
+          const parsedShop = JSON.parse(shopData);
+          console.log('Parsed shop:', parsedShop);
+          setShop(parsedShop);
         }
       }
     } catch (error) {
@@ -96,6 +103,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await authService.verifyOtp(formattedPhone, otp);
 
       if (response.status === 'success' && response.data) {
+        // Debug: Log the response data to check shop details
+        console.log('=== API Response Data ===');
+        console.log('User:', JSON.stringify(response.data.user, null, 2));
+        console.log('Shop:', JSON.stringify(response.data.shop, null, 2));
+        console.log('Token present:', !!response.data.token);
+        console.log('========================');
+
         // Store auth data temporarily without setting authenticated state
         // This allows us to show the initializing screen first
         setPendingAuthData({
@@ -128,6 +142,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!pendingAuthData) {
         throw new Error('No pending authentication data');
       }
+
+      console.log('=== Completing Login ===');
+      console.log('Saving shop data:', JSON.stringify(pendingAuthData.shop, null, 2));
+      console.log('=======================');
 
       // Save token and user data to storage
       await AsyncStorage.setItem('authToken', pendingAuthData.token);
