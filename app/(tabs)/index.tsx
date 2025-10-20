@@ -12,6 +12,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import shopService from '../../services/shopService';
+import orderService from '../../services/orderService';
 import { DashboardStats } from '../../lib/api/types';
 import ErrorModal from '../../components/ErrorModal';
 
@@ -28,6 +29,11 @@ export default function DashboardScreen({ onNavigateToSettings }) {
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
+
+  // Orders state
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
+  const [ordersError, setOrdersError] = useState<string | null>(null);
 
   // Fetch dashboard stats
   useEffect(() => {
@@ -58,6 +64,133 @@ export default function DashboardScreen({ onNavigateToSettings }) {
     fetchDashboardStats();
   }, [shop?.id]);
 
+  // Fetch orders
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!shop?.id) {
+        setIsLoadingOrders(false);
+        return;
+      }
+
+      try {
+        setIsLoadingOrders(true);
+        setOrdersError(null);
+        const response = await shopService.getShopOrders(shop.id, {
+          limit: 20,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        });
+
+        if (response.status === 'success' && response.data) {
+          // Map API orders to display format
+          const mappedOrders = response.data.orders.map(order => ({
+            id: order.orderNumber || order.id,
+            items: order.items.map(item => ({
+              name: item.productName,
+              quantity: `${item.quantity}x`,
+              price: item.price,
+              image: item.productImage || '📦'
+            })),
+            totalPrice: order.total,
+            time: getTimeAgo(order.createdAt),
+            status: mapOrderStatus(order.status),
+            customer: order.customerName || 'Customer',
+            address: order.deliveryAddress
+              ? `${order.deliveryAddress.street}, ${order.deliveryAddress.city}`
+              : 'No address',
+            rider: order.status === 'out_for_delivery' ? 'Delivery Partner' : undefined,
+            reason: order.notes,
+            rawOrder: order // Keep original order for updates
+          }));
+
+          setOrders(mappedOrders);
+        } else {
+          setOrdersError('Failed to load orders');
+        }
+      } catch (error: any) {
+        console.error('Orders error:', error);
+        setOrdersError(error.message || 'Failed to load orders');
+      } finally {
+        setIsLoadingOrders(false);
+      }
+    };
+
+    fetchOrders();
+  }, [shop?.id]);
+
+  // Helper function to get time ago
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString();
+  };
+
+  // Map API status to display status
+  const mapOrderStatus = (apiStatus: string) => {
+    const statusMap: Record<string, string> = {
+      'pending': 'pending',
+      'confirmed': 'pending',
+      'preparing': 'pending',
+      'ready': 'pending',
+      'out_for_delivery': 'delivering',
+      'delivered': 'delivered',
+      'cancelled': 'cancelled'
+    };
+    return statusMap[apiStatus] || 'pending';
+  };
+
+  // Handle order confirmation
+  const handleConfirmOrder = async (order: any) => {
+    try {
+      const orderId = order.rawOrder?.id || order.id;
+      const response = await orderService.updateOrderStatus(orderId, 'confirmed');
+
+      if (response.status === 'success') {
+        // Refresh orders
+        const ordersResponse = await shopService.getShopOrders(shop.id, {
+          limit: 20,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        });
+
+        if (ordersResponse.status === 'success' && ordersResponse.data) {
+          const mappedOrders = ordersResponse.data.orders.map(order => ({
+            id: order.orderNumber || order.id,
+            items: order.items.map(item => ({
+              name: item.productName,
+              quantity: `${item.quantity}x`,
+              price: item.price,
+              image: item.productImage || '📦'
+            })),
+            totalPrice: order.total,
+            time: getTimeAgo(order.createdAt),
+            status: mapOrderStatus(order.status),
+            customer: order.customerName || 'Customer',
+            address: order.deliveryAddress
+              ? `${order.deliveryAddress.street}, ${order.deliveryAddress.city}`
+              : 'No address',
+            rider: order.status === 'out_for_delivery' ? 'Delivery Partner' : undefined,
+            reason: order.notes,
+            rawOrder: order
+          }));
+          setOrders(mappedOrders);
+        }
+
+        Alert.alert('Success', 'Order confirmed successfully');
+      }
+    } catch (error: any) {
+      console.error('Error confirming order:', error);
+      Alert.alert('Error', error.message || 'Failed to confirm order');
+    }
+  };
+
   const quickActions = [
     { title: 'Store', icon: 'storefront-outline', color: '#f97316' },
     { title: 'Inventory', icon: 'cube-outline', color: '#f97316' },
@@ -65,7 +198,8 @@ export default function DashboardScreen({ onNavigateToSettings }) {
     { title: 'Support', icon: 'headset-outline', color: '#f97316' },
   ];
 
-  const allOrders = [
+  // Remove hardcoded orders - now using API data
+  /* const allOrders = [
     // Pending Orders
     {
       id: 'KPM 662534',
@@ -170,7 +304,7 @@ export default function DashboardScreen({ onNavigateToSettings }) {
       customer: 'Anna Smith',
       address: '753 Spruce Ave, Kottayam'
     }
-  ];
+  ]; */
 
   const orderOptions = [
     { id: 'view', title: 'View Details', icon: 'eye-outline' },
@@ -569,8 +703,23 @@ export default function DashboardScreen({ onNavigateToSettings }) {
         {/* All Orders */}
         <View className="px-5">
           <Text className="text-gray-900 text-lg font-semibold mb-4">Recent Orders....</Text>
-          
-          {allOrders.map((order, index) => {
+
+          {isLoadingOrders ? (
+            <View className="py-8">
+              <ActivityIndicator size="large" color="#f97316" />
+              <Text className="text-gray-500 text-center mt-3">Loading orders...</Text>
+            </View>
+          ) : ordersError ? (
+            <View className="bg-red-50 rounded-2xl p-6">
+              <Text className="text-red-600 text-center font-medium">{ordersError}</Text>
+            </View>
+          ) : orders.length === 0 ? (
+            <View className="bg-gray-50 rounded-2xl p-8">
+              <Text className="text-gray-500 text-center font-medium">No orders yet</Text>
+              <Text className="text-gray-400 text-center text-sm mt-1">Orders will appear here once customers place them</Text>
+            </View>
+          ) : (
+            orders.map((order, index) => {
             const statusConfig = getStatusConfig(order.status);
             const firstItem = order.items[0];
             const totalItems = order.items.length;
@@ -647,10 +796,11 @@ export default function DashboardScreen({ onNavigateToSettings }) {
                       Mark the order as ready to be delivered
                     </Text>
                     <View className="flex-row items-center">
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         className="bg-orange-500 px-6 py-3 rounded-xl flex-1"
                         activeOpacity={0.8}
                         style={{ marginRight: 12 }}
+                        onPress={() => handleConfirmOrder(order)}
                       >
                         <Text className="text-white font-semibold text-center">Confirm Order</Text>
                       </TouchableOpacity>
@@ -725,7 +875,8 @@ export default function DashboardScreen({ onNavigateToSettings }) {
                 </TouchableOpacity>
               </CardWrapper>
             );
-          })}
+          })
+          )}
         </View>
       </ScrollView>
 
