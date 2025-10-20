@@ -52,11 +52,11 @@ export default function AppNavigator() {
       case 'settings':
         return <SettingsScreen onBack={navigateBack} onNavigate={navigateTo} />;
       case 'shop-profile':
-        return <ShopProfileScreen />;
+        return <ShopProfileScreen onClose={navigateBack} />;
       case 'contact-info':
-        return <ContactInfoScreen />;
+        return <ContactInfoScreen onClose={navigateBack} />;
       case 'operating-hours':
-        return <OperatingHoursScreen />;
+        return <OperatingHoursScreen onClose={navigateBack} />;
       default:
         return null;
     }

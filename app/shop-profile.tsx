@@ -7,10 +7,18 @@ import { router } from 'expo-router';
 import shopService from '../services/shopService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function ShopProfileScreen() {
+export default function ShopProfileScreen({ onClose }: { onClose?: () => void }) {
   const insets = useSafeAreaInsets();
   const { shop, setShop } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
+
+  const handleBack = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      router.back();
+    }
+  };
 
   // Form state
   const [businessName, setBusinessName] = useState('');
@@ -63,7 +71,7 @@ export default function ShopProfileScreen() {
         await AsyncStorage.setItem('shopData', JSON.stringify(updatedShop));
 
         Alert.alert('Success', 'Shop profile updated successfully', [
-          { text: 'OK', onPress: () => router.back() }
+          { text: 'OK', onPress: handleBack }
         ]);
       }
     } catch (error: any) {
@@ -87,7 +95,7 @@ export default function ShopProfileScreen() {
           <View className="flex-row items-center flex-1">
             <TouchableOpacity
               className="w-10 h-10 items-center justify-center mr-3"
-              onPress={() => router.back()}
+              onPress={handleBack}
               activeOpacity={0.7}
             >
               <Ionicons name="arrow-back" size={24} color="#374151" />
